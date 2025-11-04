@@ -1,0 +1,66 @@
+﻿@model AuthDemo.DTOs.UserLoginDto
+@{
+    ViewData["Title"] = "Login";
+}
+
+<!-- Link para NeoAuth CSS e Font Awesome -->
+<link rel="stylesheet" href="~/css/NeoAuth.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="card shadow p-4 neoauth-card">
+        <h3 class="text-center mb-4"><i class="fa-solid fa-user-lock me-2"></i>Acessar Conta</h3>
+
+        <form method="post" class="neoauth-form">
+            <!-- Login -->
+            <div class="mb-3 position-relative">
+                <label asp-for="Login" class="form-label">Usuário ou E-mail</label>
+                <div class="input-icon">
+                    <input asp-for="Login" class="form-control" placeholder="Digite seu usuário ou e-mail" />
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-3 position-relative">
+                <label asp-for="Password" class="form-label">Senha</label>
+                <div class="input-group input-icon">
+                    <input asp-for="Password" type="password" id="passwordField" class="form-control" placeholder="Digite sua senha" />
+                    <button type="button" id="togglePassword" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Remember Me -->
+            <div class="form-check mb-3">
+                <input type="checkbox" name="rememberMe" class="form-check-input" id="rememberMe" />
+                <label class="form-check-label" for="rememberMe"><i class="fa-solid fa-clock-rotate-left me-1"></i>Lembrar de mim</label>
+            </div>
+
+            <!-- Error -->
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger text-center py-2">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i>@ViewBag.Error
+                </div>
+            }
+
+            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-right-to-bracket me-2"></i>Entrar</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const toggleBtn = document.getElementById('togglePassword');
+        const passwordField = document.getElementById('passwordField');
+
+        toggleBtn.addEventListener('click', () => {
+            const type = passwordField.type === 'password' ? 'text' : 'password';
+            passwordField.type = type;
+            toggleBtn.innerHTML = type === 'password'
+                ? '<i class="fa-solid fa-eye"></i>'
+                : '<i class="fa-solid fa-eye-slash"></i>';
+        });
+    </script>
+}

@@ -1,0 +1,42 @@
+﻿@{
+    ViewData["Title"] = "Enviar Nome do Aluno";
+}
+
+<h2 class="text-center mt-5">Digite seu Nome Completo</h2>
+
+<div class="d-flex justify-content-center mt-4">
+    <form method="post" class="w-50">
+        <input type="hidden" name="NomeCurso" value="@ViewBag.NomeCurso" />
+
+        <div class="mb-3">
+            <input type="text" name="nomeAluno" class="form-control form-control-lg" placeholder="Seu nome completo" required />
+        </div>
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary btn-lg">Gerar Certificado</button>
+        </div>
+    </form>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger text-center mt-3">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<style>
+    body {
+        background-color: #f0f0f0;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    h2 {
+        color: #333;
+    }
+</style>
+
+@section Styles {
+    <link href="~/css/SendStudentName.css" rel="stylesheet" />
+}
+

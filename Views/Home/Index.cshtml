@@ -1,0 +1,165 @@
+﻿@model AuthDemo.DTOs.DashboardViewModel
+
+
+@{
+    ViewData["Title"] = "Dashboard";
+    var permission = Model.Permission;
+    var certificados = Model.Certificados;
+    var usuarios = Model.Usuarios;
+}
+
+<div class="container dashboard-container mt-4">
+    @* Mensagem de sucesso *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success neoalert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="dashboard-title">Dashboard</h2>
+        <form asp-controller="Auth" asp-action="Logout" method="post" class="m-0">
+            <button class="btn btn-outline-danger btn-logout">Sair</button>
+        </form>
+    </div>
+
+    <div class="row g-4">
+        <!-- Certificados -->
+        <div class="col-12 col-md-8">
+            <div class="card neo-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">Certificados</h5>
+                        @if (permission == "Admin")
+                        {
+                            <a asp-controller="Certificados" asp-action="Create" class="btn btn-sm btn-primary neo-btn mb-2">
+                                Criar Certificado
+                            </a>
+                        }
+                    </div>
+
+                    @if (certificados != null && certificados.Any())
+                    {
+                        <div class="certificados-grid">
+                            @foreach (var c in certificados)
+                            {
+                                <div class="certificado-card neo-card position-relative">
+                                    <div class="certificado-img-wrapper">
+                                        <a href="@Url.Action("View", "Certificados", new { id = c.Id })">
+                                            <img src="@(!string.IsNullOrEmpty(c.CertificadoVazio) ? c.CertificadoVazio : "~/images/certificados/placeholder.png")"
+                                                 class="certificado-img"
+                                                 alt="@c.NomeCurso" />
+                                            <span class="certificado-view-icon position-absolute top-50 start-50 translate-middle text-white fs-3">
+                                                <i class="bi bi-eye"></i>
+                                            </span>
+                                        </a>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">@c.NomeCurso</h6>
+                                        <p class="card-text mb-1"><strong>Emissão:</strong> @c.DataEmissao</p>
+                                        <div class="mt-2 d-flex justify-content-center gap-2 flex-wrap">
+                                            <form asp-controller="Certificados" asp-action="Delete" method="post" class="m-0">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@c.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger neo-btn-sm"
+                                                        onclick="return confirm('Confirma exclusão do certificado @c.NomeCurso?');">
+                                                    Deletar
+                                                </button>
+                                            </form>
+
+                                            <button type="button" class="btn btn-sm btn-outline-success neo-btn-sm copiar-link-btn"
+                                                    data-nomecurso="@c.NomeCurso">
+                                                Enviar Aluno
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center neoalert-info">
+                            Nenhum certificado cadastrado ainda. Clique em <strong>Criar Certificado</strong> para adicionar o primeiro!
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Usuários -->
+        <div class="col-12 col-md-4">
+            <div class="card neo-card">
+                <div class="card-body">
+                    <h5 class="card-title">Usuários</h5>
+                    @if (permission == "Admin")
+                    {
+                        <a asp-controller="Users" asp-action="Create" class="btn btn-sm btn-success neo-btn mb-2">Criar Usuário</a>
+                    }
+
+                    <ul class="list-group list-group-flush">
+                        @foreach (var u in usuarios)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center neo-list-item">
+                                <div>
+                                    <strong>@u.Username</strong><br />
+                                    <small>@u.Email</small>
+                                </div>
+                                <div class="text-end">
+                                    <small class="d-block">@u.Permission</small>
+                                    @if (permission == "Admin" && u.Permission == "Colaborador")
+                                    {
+                                        <form asp-controller="Users" asp-action="Delete" method="post" class="d-inline-block ms-2">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@u.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger neo-btn-sm"
+                                                    onclick="return confirm('Confirma exclusão do usuário @u.Username?');">
+                                                Excluir
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/styleDashboard.css" />
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const buttons = document.querySelectorAll('.copiar-link-btn');
+
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const nomeCurso = btn.dataset.nomecurso;
+                    const url = `${window.location.origin}/certificado/${encodeURIComponent(nomeCurso)}`;
+
+                    const tempInput = document.createElement('input');
+                    tempInput.value = url;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    tempInput.setSelectionRange(0, 99999);
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+
+                    const originalText = btn.innerText;
+                    btn.innerText = 'Link copiado!';
+                    btn.classList.add('btn-success');
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.classList.remove('btn-success');
+                    }, 2000);
+                });
+            });
+        });
+    </script>
+}

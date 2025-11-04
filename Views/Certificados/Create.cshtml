@@ -1,0 +1,152 @@
+﻿@model AuthDemo.DTOs.CertificateDto
+@{
+    ViewData["Title"] = "Criar Certificado Visual";
+    var googleFonts = new List<string> {
+        "Roboto","Open Sans","Lato","Montserrat","Oswald","Raleway","Merriweather","PT Sans",
+        "Ubuntu","Noto Sans","Poppins","Source Sans Pro","Nunito","Playfair Display","Roboto Condensed",
+        "Inconsolata","Fira Sans","Work Sans","Rubik","Exo 2","Dosis","Quicksand","Bebas Neue",
+        "Arimo","Karla","Hind","Varela Round","Josefin Sans","Anton","Cairo","Righteous",
+        "IBM Plex Sans","Baloo 2","Catamaran","Teko","Comfortaa","Spectral","Alegreya","Indie Flower"
+    };
+}
+
+@* Carrega Google Fonts *@
+@foreach (var font in googleFonts)
+{
+    <link href="https://fonts.googleapis.com/css2?family=@font.Replace(" ", "+")&display=swap" rel="stylesheet">
+}
+
+<div class="container neo-container mt-5">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success neoalert-success text-center">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeInDown">
+        <h2 class="dashboard-title"><i class="bi bi-award me-2"></i>Criar Certificado</h2>
+        <a asp-controller="Certificados" asp-action="Index" class="btn btn-outline-secondary btn-logout">
+            <i class="bi bi-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Formulário -->
+        <div class="col-12 col-lg-6">
+            <div class="card neo-card animate__animated animate__fadeInLeft">
+                <div class="card-body">
+                    <h5 class="card-title mb-4 text-primary"><i class="bi bi-pencil-square me-2"></i>Dados do Certificado</h5>
+
+                    <form asp-action="Create" asp-controller="Certificados" method="post" enctype="multipart/form-data" id="certificateForm">
+                        @Html.AntiForgeryToken()
+
+                        <!-- Erros -->
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger animate__animated animate__shakeX">
+                                <ul class="mb-0">
+                                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                    {
+                                        <li>@error.ErrorMessage</li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+
+                        <!-- Upload -->
+                        <div class="mb-3">
+                            <label class="form-label">Upload Certificado Vazio <span class="text-danger">*</span></label>
+                            <input type="file" name="certificadoVazioFile" class="form-control" accept="image/*,.pdf" required />
+                            <small class="text-muted">Formatos aceitos: JPG, PNG, PDF</small>
+                        </div>
+
+                        @await Html.PartialAsync("_CertificateFieldsPartial", Model)
+
+                        <hr class="my-4" />
+                        <h5 class="card-title mb-3 text-primary"><i class="bi bi-palette me-2"></i>Configurações de Estilo do Texto</h5>
+
+                        <div class="mb-3">
+                            <label class="form-label">Fonte</label>
+                            <select id="draggableFont" class="form-select">
+                                @foreach (var font in googleFonts)
+                                {
+                                    <option value="@font" style="font-family:'@font';">@font</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Tamanho (px)</label>
+                                <input type="number" id="draggableFontSize" class="form-control" value="16" min="8" max="72" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Cor</label>
+                                <input type="color" id="draggableFontColor" class="form-control form-control-color w-100" value="#000000" />
+                            </div>
+                        </div>
+
+                        <div class="form-check mt-3">
+                            <input type="checkbox" id="draggableFontWeight" class="form-check-input" />
+                            <label class="form-check-label" for="draggableFontWeight">Negrito</label>
+                        </div>
+
+                        <div class="mb-3 mt-3">
+                            <label class="form-label">Alinhamento</label>
+                            <select id="draggableTextAlign" class="form-select">
+                                <option value="left">Esquerda</option>
+                                <option value="center" selected>Centralizado</option>
+                                <option value="right">Direita</option>
+                            </select>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="toggleDraggables" checked>
+                            <label class="form-check-label" for="toggleDraggables">Mostrar campos no certificado</label>
+                        </div>
+
+                        <input type="hidden" name="CertificadoGeradoBase64" id="CertificadoGeradoBase64" />
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary neo-btn">
+                                <i class="bi bi-floppy me-2"></i>Salvar Certificado
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pré-visualização -->
+        <div class="col-12 col-lg-6">
+            <div class="card neo-card animate__animated animate__fadeInRight">
+                <div class="card-body">
+                    <h5 class="card-title mb-4 text-primary"><i class="bi bi-eye me-2"></i>Pré-visualização</h5>
+                    <div id="certificatePreview" class="certificate-preview-area">
+                        <div class="preview-placeholder text-center">
+                            <i class="bi bi-file-earmark-image fs-1 text-muted mb-2 d-block"></i>
+                            <span id="previewPlaceholder" class="text-muted d-block">Nenhum certificado carregado</span>
+                            <small class="text-muted">Faça upload de uma imagem para visualizar</small>
+                        </div>
+                        <img id="certificadoVazioImg" src="" class="img-fluid rounded shadow-sm" style="display:none;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet" />
+    <link href="~/css/CreateCertification.css" rel="stylesheet" />
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="~/js/certificate-form.js"></script>
+    <script src="~/js/configNomeAlunoCertificado.js"></script>
+}

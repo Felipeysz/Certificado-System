@@ -1,0 +1,52 @@
+﻿@model AuthDemo.DTOs.UserCreateDto
+@{
+    ViewData["Title"] = "Criar Colaborador";
+}
+
+<div class="container mt-4" style="max-width: 600px;">
+    <h3>Criar Colaborador</h3>
+
+    <form method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label asp-for="Username" class="form-label">Usuário</label>
+            <input asp-for="Username" class="form-control" />
+            <span asp-validation-for="Username" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label">E-mail</label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label">Senha</label>
+            <input asp-for="Password" type="password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @foreach (var e in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@e.ErrorMessage</div>
+                }
+            </div>
+        }
+
+        <button type="submit" class="btn btn-primary">Criar Colaborador</button>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
+    </form>
+</div>
+
+@section Styles {
+    <link href="~/css/CreateUser.css" rel="stylesheet" />
+}
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
