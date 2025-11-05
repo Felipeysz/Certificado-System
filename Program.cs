@@ -7,6 +7,10 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Carregar variáveis do .env
+builder.Configuration.AddEnvironmentVariables();
+
+
 // MVC
 builder.Services.AddControllersWithViews();
 
