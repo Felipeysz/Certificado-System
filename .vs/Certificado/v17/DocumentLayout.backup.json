@@ -1,28 +1,7 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\Felip\\Desktop\\Certificado\\",
-  "Documents": [
-    {
-      "AbsoluteMoniker": "D:0:0:{1C41ED20-4134-4CE7-8855-472819341F35}|Certificado.csproj|c:\\users\\felip\\desktop\\certificado\\certificado.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{1C41ED20-4134-4CE7-8855-472819341F35}|Certificado.csproj|solutionrelative:certificado.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1C41ED20-4134-4CE7-8855-472819341F35}|Certificado.csproj|c:\\users\\felip\\desktop\\certificado\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{1C41ED20-4134-4CE7-8855-472819341F35}|Certificado.csproj|solutionrelative:properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1C41ED20-4134-4CE7-8855-472819341F35}|Certificado.csproj|c:\\users\\felip\\desktop\\certificado\\migrations\\20251105170856_initialcreate.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1C41ED20-4134-4CE7-8855-472819341F35}|Certificado.csproj|solutionrelative:migrations\\20251105170856_initialcreate.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1C41ED20-4134-4CE7-8855-472819341F35}|Certificado.csproj|c:\\users\\felip\\desktop\\certificado\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{1C41ED20-4134-4CE7-8855-472819341F35}|Certificado.csproj|solutionrelative:dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1C41ED20-4134-4CE7-8855-472819341F35}|Certificado.csproj|c:\\users\\felip\\desktop\\certificado\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1C41ED20-4134-4CE7-8855-472819341F35}|Certificado.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    }
-  ],
+  "Documents": [],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -30,75 +9,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": -1,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "launchSettings.json",
-              "DocumentMoniker": "C:\\Users\\Felip\\Desktop\\Certificado\\Properties\\launchSettings.json",
-              "RelativeDocumentMoniker": "Properties\\launchSettings.json",
-              "ToolTip": "C:\\Users\\Felip\\Desktop\\Certificado\\Properties\\launchSettings.json",
-              "RelativeToolTip": "Properties\\launchSettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-11-05T18:08:25.118Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Certificado",
-              "DocumentMoniker": "C:\\Users\\Felip\\Desktop\\Certificado\\Certificado.csproj",
-              "RelativeDocumentMoniker": "Certificado.csproj",
-              "ToolTip": "C:\\Users\\Felip\\Desktop\\Certificado\\Certificado.csproj",
-              "RelativeToolTip": "Certificado.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAABlAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-11-05T18:03:44.68Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "20251105170856_InitialCreate.Designer.cs",
-              "DocumentMoniker": "C:\\Users\\Felip\\Desktop\\Certificado\\Migrations\\20251105170856_InitialCreate.Designer.cs",
-              "RelativeDocumentMoniker": "Migrations\\20251105170856_InitialCreate.Designer.cs",
-              "ToolTip": "C:\\Users\\Felip\\Desktop\\Certificado\\Migrations\\20251105170856_InitialCreate.Designer.cs",
-              "RelativeToolTip": "Migrations\\20251105170856_InitialCreate.Designer.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAwBEAAAAgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T18:03:31.689Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Felip\\Desktop\\Certificado\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\Felip\\Desktop\\Certificado\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAnwBIAAAAEAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T17:20:26.372Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Dockerfile",
-              "DocumentMoniker": "C:\\Users\\Felip\\Desktop\\Certificado\\Dockerfile",
-              "RelativeDocumentMoniker": "Dockerfile",
-              "ToolTip": "C:\\Users\\Felip\\Desktop\\Certificado\\Dockerfile",
-              "RelativeToolTip": "Dockerfile",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAAwBoAAAAnAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-11-05T17:19:16.539Z",
-              "EditorCaption": ""
             }
           ]
         }
