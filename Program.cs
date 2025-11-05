@@ -1,43 +1,44 @@
 using AuthDemo.Data;
 using AuthDemo.Repositories;
 using AuthDemo.Services;
-using DotNetEnv;
-using DotNetEnv.Configuration;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using System.IO;
 
-// Carregar variáveis do .env
-Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 
 // MVC
 builder.Services.AddControllersWithViews();
-builder.Configuration.AddDotNetEnv();
 
-// --- Configuração do SQLite com caminho absoluto ---
-var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
+// --- Configuração do SQLite usando variável de ambiente ---
+var connectionString = Environment.GetEnvironmentVariable("DEFAULTCONNECTION");
 if (string.IsNullOrWhiteSpace(connectionString))
 {
-    throw new InvalidOperationException("DefaultConnection não configurado no .env");
+    throw new InvalidOperationException("DEFAULTCONNECTION não configurado no ambiente.");
 }
 
-// Se for relativo, converte para caminho absoluto dentro de um diretório gravável
+// Conecta diretamente no arquivo de banco (mesmo nível da aplicação dentro do container)
 if (!Path.IsPathRooted(connectionString))
 {
-    var dbFolder = Path.Combine(Directory.GetCurrentDirectory(), "data");
-    Directory.CreateDirectory(dbFolder);
-    connectionString = Path.Combine(dbFolder, connectionString);
+    connectionString = Path.Combine(Directory.GetCurrentDirectory(), connectionString);
 }
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite($"Data Source={connectionString}"));
 
+// --- JWT Key ---
+var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new InvalidOperationException("JWT_KEY não configurada no ambiente.");
+}
+
 // --- Data Protection para antiforgery e cookies ---
 var keysFolder = Path.Combine(Directory.GetCurrentDirectory(), "keys");
 Directory.CreateDirectory(keysFolder);
+
 builder.Services.AddDataProtection()
        .PersistKeysToFileSystem(new DirectoryInfo(keysFolder))
        .SetApplicationName("CertificadoSystem");
@@ -64,13 +65,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
-
-// --- Criar banco e aplicar migrations automaticamente ---
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate(); // cria o banco e as tabelas, incluindo Users
-}
 
 // Middleware de erro
 if (!app.Environment.IsDevelopment())
