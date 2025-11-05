@@ -34,16 +34,12 @@
             if (previewPlaceholder) previewPlaceholder.style.display = 'none';
 
             img.onload = () => {
-                // pega tamanho do container
                 const containerWidth = certificatePreview.clientWidth;
                 const containerHeight = certificatePreview.clientHeight;
-
                 const imgRatio = img.naturalWidth / img.naturalHeight;
                 const containerRatio = containerWidth / containerHeight;
-
                 let newWidth, newHeight;
 
-                // Ajusta proporcionalmente para caber dentro do card-body
                 if (imgRatio > containerRatio) {
                     newWidth = containerWidth;
                     newHeight = newWidth / imgRatio;
@@ -64,24 +60,7 @@
         reader.readAsDataURL(file);
     });
 
-    // === Controles globais de estilo ===
-    const fontSelector = document.getElementById('draggableFont');
-    const fontSizeInput = document.getElementById('draggableFontSize');
-    const fontColorInput = document.getElementById('draggableFontColor');
-    const fontWeightInput = document.getElementById('draggableFontWeight');
-    const textAlignSelector = document.getElementById('draggableTextAlign');
-
-    let nomeAlunoDiv = null;
-
-    const getStyleValues = () => ({
-        fontFamily: fontSelector?.value || 'Arial, sans-serif',
-        fontSize: fontSizeInput?.value + 'px' || '16px',
-        color: fontColorInput?.value || '#000',
-        fontWeight: fontWeightInput?.checked ? 'bold' : 'normal',
-        textAlign: textAlignSelector?.value || 'left'
-    });
-
-    // === Criação das divs arrastáveis ===
+    // === Criação das divs arrastáveis com estilos individuais ===
     const updateDraggableDivs = () => {
         certificatePreview.querySelectorAll('.draggable-div').forEach(d => d.remove());
 
@@ -89,26 +68,57 @@
             const checkbox = input.parentElement.querySelector('.show-on-certificate');
             if (!checkbox || !checkbox.checked) return;
 
-            const styleValues = getStyleValues();
             const div = document.createElement('div');
             div.className = 'draggable-div';
-            div.innerText = input.value || '';
+
+            // Formata datas
+            let value = input.value;
+            if (input.type === 'date' && value) {
+                const [year, month, day] = value.split('-');
+                const date = new Date(year, month - 1, day);
+                value = date.toLocaleDateString('pt-BR');
+            }
+            div.innerText = value;
+
+            // Estilos individuais por campo
+            const fieldId = input.dataset.fieldId;
+            const fontSelect = document.querySelector(`.field-font[data-field-id="${fieldId}"]`);
+            const fontSizeInput = document.querySelector(`.field-font-size[data-field-id="${fieldId}"]`);
+            const colorInput = document.querySelector(`.field-color[data-field-id="${fieldId}"]`);
+
             Object.assign(div.style, {
                 position: 'absolute',
                 top: '10px',
                 left: '10px',
-                fontFamily: styleValues.fontFamily,
-                fontSize: styleValues.fontSize,
-                color: styleValues.color,
-                fontWeight: styleValues.fontWeight,
-                textAlign: styleValues.textAlign,
+                fontFamily: fontSelect?.value || 'Arial, sans-serif',
+                fontSize: (fontSizeInput?.value ? fontSizeInput.value + 'px' : '16px'),
+                color: colorInput?.value || '#000',
                 cursor: 'move',
                 pointerEvents: 'auto',
                 display: (toggleDraggablesCheckbox?.checked ?? true) ? 'block' : 'none'
             });
 
             certificatePreview.appendChild(div);
-            input.addEventListener('input', () => div.innerText = input.value);
+
+            // Atualiza valor em tempo real
+            input.addEventListener('input', () => {
+                let newValue = input.value;
+                if (input.type === 'date' && newValue) {
+                    const [year, month, day] = newValue.split('-');
+                    const date = new Date(year, month - 1, day);
+                    newValue = date.toLocaleDateString('pt-BR');
+                }
+                div.innerText = newValue;
+            });
+
+            // Atualiza estilo individual
+            [fontSelect, fontSizeInput, colorInput].forEach(el => {
+                el?.addEventListener('input', () => {
+                    div.style.fontFamily = fontSelect?.value || 'Arial, sans-serif';
+                    div.style.fontSize = fontSizeInput?.value ? fontSizeInput.value + 'px' : '16px';
+                    div.style.color = colorInput?.value || '#000';
+                });
+            });
 
             // Função de arrastar
             let isDragging = false, offsetX = 0, offsetY = 0;
@@ -127,25 +137,21 @@
         });
     };
 
-    // Atualiza quando mudar input, checkbox ou estilo
+    // Atualiza divs ao mudar input, checkbox ou controles
     document.querySelectorAll('.draggable-input').forEach(input => {
         input.addEventListener('input', updateDraggableDivs);
         const checkbox = input.parentElement.querySelector('.show-on-certificate');
         checkbox?.addEventListener('change', updateDraggableDivs);
     });
 
-    [fontSelector, fontSizeInput, fontColorInput, fontWeightInput, textAlignSelector].forEach(el => {
-        el?.addEventListener('change', updateDraggableDivs);
-    });
-
-    updateDraggableDivs();
-
     toggleDraggablesCheckbox?.addEventListener('change', () => {
         const display = toggleDraggablesCheckbox.checked ? 'block' : 'none';
         certificatePreview.querySelectorAll('.draggable-div').forEach(d => d.style.display = display);
     });
 
-    // === Gerar imagem no clique de "Visualizar" ===
+    updateDraggableDivs();
+
+    // === Visualizar certificado ===
     renderBtn?.addEventListener('click', async e => {
         e.preventDefault();
         if (!certificadoVazioInput?.files?.length) {
@@ -153,7 +159,7 @@
             return;
         }
 
-        nomeAlunoDiv = certificatePreview.querySelector('.draggable-nome-aluno');
+        const nomeAlunoDiv = certificatePreview.querySelector('.draggable-nome-aluno');
         if (nomeAlunoDiv) nomeAlunoDiv.style.display = 'none';
 
         const canvas = await html2canvas(certificatePreview, { scale: 3 });
@@ -166,11 +172,11 @@
         if (nomeAlunoDiv) nomeAlunoDiv.style.display = 'flex';
     });
 
-    // === Bloquear submit até tudo estar correto ===
+    // === Submit ===
     form.addEventListener('submit', async e => {
         e.preventDefault();
 
-        nomeAlunoDiv = certificatePreview.querySelector('.draggable-nome-aluno');
+        const nomeAlunoDiv = certificatePreview.querySelector('.draggable-nome-aluno');
 
         if (!certificadoVazioInput?.files?.length || !nomeAlunoDiv || nomeAlunoDiv.style.border !== '2px solid green') {
             alert('Certifique-se de que o certificado está carregado e o Nome do Aluno está travado!');
@@ -211,7 +217,7 @@
         form.submit();
     });
 
-    // === Interceptar Enter para não enviar antes da hora ===
+    // === Interceptar Enter ===
     form?.addEventListener('keydown', e => {
         if (e.key === 'Enter') e.preventDefault();
     });

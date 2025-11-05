@@ -3,12 +3,14 @@ using AuthDemo.Models;
 using AuthDemo.Repositories;
 using AuthDemo.Validators;
 using FluentValidation.Results;
-using Microsoft.AspNetCore.Authorization;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using SixLabors.Fonts;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Drawing.Processing;
 
 namespace AuthDemo.Services
 {
@@ -45,46 +47,30 @@ namespace AuthDemo.Services
             {
                 var base64Data = dto.CertificadoGeradoBase64.Split(',')[1];
                 var bytes = Convert.FromBase64String(base64Data);
-
                 var imagePath = Path.Combine(certificateFolder, safeFileNameBase + ".png");
 
-                // Redimensiona para tamanho padrão antes de salvar
-                using (var ms = new MemoryStream(bytes))
-                using (var originalImage = new Bitmap(ms))
+                using var ms = new MemoryStream(bytes);
+                using var image = Image.Load<Rgba32>(ms);
+
+                int targetWidth = 900;
+                int targetHeight = 600;
+
+                image.Mutate(x => x.Resize(new ResizeOptions
                 {
-                    int targetWidth = 900;
-                    int targetHeight = 600;
+                    Size = new Size(targetWidth, targetHeight),
+                    Mode = ResizeMode.Pad,
+                    Position = AnchorPositionMode.Center,
+                    PadColor = Color.White
+                }));
 
-                    using (var resizedImage = new Bitmap(targetWidth, targetHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
-                    {
-                        resizedImage.SetResolution(originalImage.HorizontalResolution, originalImage.VerticalResolution);
-
-                        using (var graphics = Graphics.FromImage(resizedImage))
-                        {
-                            graphics.CompositingQuality = CompositingQuality.HighQuality;
-                            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                            graphics.SmoothingMode = SmoothingMode.HighQuality;
-
-                            float scale = Math.Min((float)targetWidth / originalImage.Width, (float)targetHeight / originalImage.Height);
-                            int newWidth = (int)(originalImage.Width * scale);
-                            int newHeight = (int)(originalImage.Height * scale);
-                            int offsetX = (targetWidth - newWidth) / 2;
-                            int offsetY = (targetHeight - newHeight) / 2;
-
-                            graphics.DrawImage(originalImage, offsetX, offsetY, newWidth, newHeight);
-                        }
-
-                        resizedImage.Save(imagePath, ImageFormat.Png);
-                    }
-                }
-
+                await image.SaveAsPngAsync(imagePath);
 
                 dto.CertificadoVazio = "/img/certificados/" + safeFileNameBase + "/" + safeFileNameBase + ".png";
 
                 if (!string.IsNullOrEmpty(dto.NomeAlunoConfig))
                 {
                     var configPath = Path.Combine(certificateFolder, safeFileNameBase + ".config");
-                    await System.IO.File.WriteAllTextAsync(configPath, dto.NomeAlunoConfig);
+                    await File.WriteAllTextAsync(configPath, dto.NomeAlunoConfig);
                 }
             }
             else if (certificadoVazioFile != null && certificadoVazioFile.Length > 0)
@@ -100,7 +86,7 @@ namespace AuthDemo.Services
                 if (!string.IsNullOrEmpty(dto.NomeAlunoConfig))
                 {
                     var configPath = Path.Combine(certificateFolder, safeFileNameBase + ".config");
-                    await System.IO.File.WriteAllTextAsync(configPath, dto.NomeAlunoConfig);
+                    await File.WriteAllTextAsync(configPath, dto.NomeAlunoConfig);
                 }
             }
 
@@ -150,8 +136,7 @@ namespace AuthDemo.Services
 
             return "/" + Path.Combine(folder, safeFileName + extension).Replace("\\", "/");
         }
-        
-        
+
         public async Task DeleteAsync(int id)
         {
             var certificate = await _repository.GetByIdAsync(id);
@@ -170,7 +155,6 @@ namespace AuthDemo.Services
             await _repository.DeleteAsync(id);
         }
 
-
         public async Task<byte[]> CertificarAlunoAsync(string nomeCurso, string nomeAluno)
         {
             var safeFileNameBase = string.Concat(nomeCurso.Split(Path.GetInvalidFileNameChars()));
@@ -179,14 +163,13 @@ namespace AuthDemo.Services
             var imagePath = Path.Combine(certificateFolder, safeFileNameBase + ".png");
             var configPath = Path.Combine(certificateFolder, safeFileNameBase + ".config");
 
-            if (!System.IO.File.Exists(imagePath))
+            if (!File.Exists(imagePath))
                 throw new FileNotFoundException("Certificado não encontrado.");
 
-            // Desserializa config ou cria default
             NomeAlunoConfig config;
-            if (System.IO.File.Exists(configPath))
+            if (File.Exists(configPath))
             {
-                var configJson = await System.IO.File.ReadAllTextAsync(configPath);
+                var configJson = await File.ReadAllTextAsync(configPath);
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 options.Converters.Add(new NumberOrStringToStringConverter());
                 config = JsonSerializer.Deserialize<NomeAlunoConfig>(configJson, options) ?? new NomeAlunoConfig();
@@ -196,61 +179,52 @@ namespace AuthDemo.Services
                 config = new NomeAlunoConfig();
             }
 
-            // Valores padrão
             float fontSize = float.TryParse(config.FontSize.Replace("px", ""), out var fs) && fs > 0 ? fs : 16f;
             float x = float.TryParse(config.Left.Replace("px", ""), out var lx) ? lx : 50f;
             float y = float.TryParse(config.Top.Replace("px", ""), out var ty) ? ty : 50f;
 
-            // Cria bitmap de alta qualidade
-            using var original = new Bitmap(imagePath);
-            using var bitmap = new Bitmap(original.Width, original.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            bitmap.SetResolution(original.HorizontalResolution, original.VerticalResolution);
+            using var image = await Image.LoadAsync<Rgba32>(imagePath);
 
-            using var graphics = Graphics.FromImage(bitmap);
-            graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-            graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
-            graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+            var font = SystemFonts.CreateFont(
+                string.IsNullOrWhiteSpace(config.FontFamily) ? "Arial" : config.FontFamily,
+                fontSize,
+                config.FontWeight.ToLower() == "bold" ? FontStyle.Bold : FontStyle.Regular
+            );
 
-            // Copia a imagem base
-            graphics.DrawImage(original, 0, 0, bitmap.Width, bitmap.Height);
+            var color = Color.TryParse(config.Color, out var parsedColor) ? parsedColor : Color.Black;
 
-            // Prepara fonte
-            using var font = new Font(config.FontFamily, fontSize,
-                config.FontWeight.ToLower() == "bold" ? FontStyle.Bold : FontStyle.Regular);
-
-            // Converte cor
-            Color color = config.Color.StartsWith("rgb")
-                ? Color.FromArgb(
-                    int.Parse(config.Color.Replace("rgb(", "").Replace(")", "").Split(',')[0].Trim()),
-                    int.Parse(config.Color.Replace("rgb(", "").Replace(")", "").Split(',')[1].Trim()),
-                    int.Parse(config.Color.Replace("rgb(", "").Replace(")", "").Split(',')[2].Trim()))
-                : ColorTranslator.FromHtml(config.Color);
-
-            using var brush = new SolidBrush(color);
-
-            // Cria StringFormat para centralizar horizontalmente
-            float rectWidth = Math.Max(config.Width > 0 ? config.Width : 400, 100);
-            float rectHeight = Math.Max(config.Height > 0 ? config.Height : fontSize * 2f, fontSize * 1.5f);
+            float rectWidth = config.Width > 0 ? config.Width : 400;
+            float rectHeight = config.Height > 0 ? config.Height : fontSize * 2f;
 
             var rect = new RectangleF(x + 168.5f, y + 16.5f, rectWidth, rectHeight);
 
-            // StringFormat para centralizar horizontalmente
-            var stringFormat = new StringFormat
+            image.Mutate(ctx =>
             {
-                Alignment = StringAlignment.Center, // centraliza horizontal
-                LineAlignment = StringAlignment.Near // topo no y
-            };
+                // cria opções apenas para medir o texto
+                var measureOptions = new SixLabors.Fonts.TextOptions(font)
+                {
+                    WrappingLength = rect.Width
+                };
 
-            graphics.DrawString(nomeAluno, font, brush, rect, stringFormat);
+                // obtém o tamanho do texto com a font atual
+                var textSize = TextMeasurer.MeasureSize(nomeAluno, measureOptions);
+
+                // calcula ponto para centralizar horizontalmente dentro do rect
+                var drawX = rect.X + (rect.Width - textSize.Width) / 2f;
+                var drawY = rect.Y; // mantém topo como antes
+                var drawPoint = new SixLabors.ImageSharp.PointF(drawX, drawY);
+
+                // chamada NÃO ambígua para desenhar: texto, fonte, cor, ponto
+                ctx.DrawText(nomeAluno, font, color, drawPoint);
+            });
+
+
 
 
             using var ms = new MemoryStream();
-            bitmap.Save(ms, ImageFormat.Png);
+            await image.SaveAsync(ms, new PngEncoder());
             return ms.ToArray();
         }
-
-
 
         public class NumberOrStringToStringConverter : JsonConverter<string>
         {
@@ -269,15 +243,13 @@ namespace AuthDemo.Services
             }
         }
 
-
-
         private class NomeAlunoConfig
         {
             [JsonPropertyName("top")]
-            public string Top { get; set; }
+            public string Top { get; set; } = "0";
 
             [JsonPropertyName("left")]
-            public string Left { get; set; }
+            public string Left { get; set; } = "0";
 
             [JsonPropertyName("width")]
             public int Width { get; set; }
@@ -286,19 +258,19 @@ namespace AuthDemo.Services
             public float Height { get; set; }
 
             [JsonPropertyName("fontFamily")]
-            public string FontFamily { get; set; }
+            public string FontFamily { get; set; } = "Arial";
 
             [JsonPropertyName("fontSize")]
-            public string FontSize { get; set; }
+            public string FontSize { get; set; } = "16px";
 
             [JsonPropertyName("color")]
-            public string Color { get; set; }
+            public string Color { get; set; } = "black";
 
             [JsonPropertyName("fontWeight")]
-            public string FontWeight { get; set; }
+            public string FontWeight { get; set; } = "regular";
 
             [JsonPropertyName("textAlign")]
-            public string TextAlign { get; set; }
+            public string TextAlign { get; set; } = "center";
         }
     }
 }

@@ -1,6 +1,8 @@
 using AuthDemo.Data;
 using AuthDemo.Repositories;
 using AuthDemo.Services;
+using DotNetEnv;
+using DotNetEnv.Configuration;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -8,15 +10,17 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Carregar variáveis do .env
-builder.Configuration.AddEnvironmentVariables();
-
+Env.Load();
 
 // MVC
 builder.Services.AddControllersWithViews();
 
+builder.Configuration.AddDotNetEnv();
+
 // Banco SQLite
+var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite(connectionString));
 
 // Injeção de dependências
 builder.Services.AddScoped<UserRepository>();
@@ -52,7 +56,6 @@ using (var scope = app.Services.CreateScope())
 // Middleware de tratamento de erros para produção
 if (!app.Environment.IsDevelopment())
 {
-    // Atribui o caminho do ExceptionHandler para o controller Razor
     app.UseExceptionHandler("/ErrorPage/Index");
     app.UseHsts();
 }

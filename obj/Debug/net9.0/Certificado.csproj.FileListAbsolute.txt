@@ -355,7 +355,6 @@ C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\Microsof
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\Microsoft.IdentityModel.JsonWebTokens.dll
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\Microsoft.IdentityModel.Logging.dll
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\Microsoft.IdentityModel.Tokens.dll
-C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\Microsoft.Win32.SystemEvents.dll
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\Mono.TextTemplating.dll
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\PdfSharpCore.dll
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\ICSharpCode.SharpZipLib.dll
@@ -370,8 +369,6 @@ C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\System.C
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\System.Composition.Hosting.dll
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\System.Composition.Runtime.dll
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\System.Composition.TypedParts.dll
-C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\System.Drawing.Common.dll
-C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\System.Private.Windows.Core.dll
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\System.IdentityModel.Tokens.Jwt.dll
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\System.Text.Json.dll
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\cs\Microsoft.CodeAnalysis.resources.dll
@@ -440,7 +437,6 @@ C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\tr\Micro
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\de\PdfSharpCore.resources.dll
-C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\runtimes\win\lib\net9.0\Microsoft.Win32.SystemEvents.dll
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\runtimes\browser-wasm\nativeassets\net9.0\e_sqlite3.a
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\runtimes\linux-arm\native\libe_sqlite3.so
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\runtimes\linux-arm64\native\libe_sqlite3.so
@@ -610,7 +606,6 @@ C:\Users\Felip\Desktop\Certificado - Copia\Certificado\obj\Debug\net9.0\staticwe
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\obj\Debug\net9.0\staticwebassets.build.json.cache
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\obj\Debug\net9.0\staticwebassets.development.json
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\obj\Debug\net9.0\staticwebassets.build.endpoints.json
-C:\Users\Felip\Desktop\Certificado - Copia\Certificado\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\obj\Debug\net9.0\Certific.7F52DD36.Up2Date
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\obj\Debug\net9.0\Certificado.dll
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\obj\Debug\net9.0\refint\Certificado.dll
@@ -622,10 +617,13 @@ C:\Users\Felip\Desktop\Certificado - Copia\Certificado\obj\Debug\net9.0\compress
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\obj\Debug\net9.0\compressed\h18lqya6fz-6ydakkpw5j.gz
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\obj\Debug\net9.0\compressed\ckfw21sfbh-rz2nc6va5w.gz
 C:\Users\Felip\Desktop\Certificado - Copia\Certificado\obj\Debug\net9.0\compressed\yqou7n6ih0-euavorajc5.gz
-C:\Users\Felip\Desktop\Certificado - Copia\Certificado\obj\Debug\net9.0\compressed\jbqopupsvo-1gg80zoozr.gz
 C:\Users\Felip\Desktop\Certificado\Certificado\obj\Debug\net9.0\compressed\yqou7n6ih0-euavorajc5.gz
 C:\Users\Felip\Desktop\Certificado\Certificado\obj\Debug\net9.0\compressed\h18lqya6fz-6ydakkpw5j.gz
 C:\Users\Felip\Desktop\Certificado\Certificado\obj\Debug\net9.0\compressed\tcvzz5kds0-zkw9v4joyv.gz
 C:\Users\Felip\Desktop\Certificado\Certificado\obj\Debug\net9.0\compressed\ckfw21sfbh-rz2nc6va5w.gz
 C:\Users\Felip\Desktop\Certificado\Certificado\obj\Debug\net9.0\compressed\1thnwgxb7y-1n4az639r3.gz
 C:\Users\Felip\Desktop\Certificado\Certificado\obj\Debug\net9.0\compressed\jbqopupsvo-1gg80zoozr.gz
+C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\SixLabors.ImageSharp.Drawing.dll
+C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\DotNetEnv.dll
+C:\Users\Felip\Desktop\Certificado - Copia\Certificado\bin\Debug\net9.0\Sprache.dll
+C:\Users\Felip\Desktop\Certificado - Copia\Certificado\obj\Debug\net9.0\compressed\jbqopupsvo-gcm3mtlc5l.gz

@@ -2,141 +2,151 @@
 
 <div class="neo-form-section">
 
-    <!-- Campos principais -->
-    <div class="mb-4 fade-in">
-        <label asp-for="NomeCurso" class="form-label neo-label">Nome do Curso</label>
-        <input asp-for="NomeCurso" class="form-control neo-input draggable-input" />
-        <div class="form-check mt-2">
-            <input type="checkbox" class="form-check-input show-on-certificate" id="showNomeCurso" />
-            <label class="form-check-label" for="showNomeCurso">Mostrar no Certificado</label>
-        </div>
-    </div>
-
-    <div class="mb-4 fade-in">
-        <label asp-for="NomeInstituicao" class="form-label neo-label">Nome da Instituição</label>
-        <input asp-for="NomeInstituicao" class="form-control neo-input draggable-input" />
-        <div class="form-check mt-2">
-            <input type="checkbox" class="form-check-input show-on-certificate" id="showNomeInstituicao" />
-            <label class="form-check-label" for="showNomeInstituicao">Mostrar no Certificado</label>
-        </div>
-    </div>
-
-    <div class="mb-4 fade-in">
-        <label asp-for="DataEmissao" class="form-label neo-label">Data de Emissão</label>
-        <input asp-for="DataEmissao" type="date" class="form-control neo-input draggable-input" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
-        <div class="form-check mt-2">
-            <input type="checkbox" class="form-check-input show-on-certificate" id="showDataEmissao" />
-            <label class="form-check-label" for="showDataEmissao">Mostrar no Certificado</label>
-        </div>
-    </div>
-
-    <!-- Botões -->
-    <div class="d-flex gap-2 mb-4">
-        <button type="button" class="btn btn-primary neo-btn flex-fill" id="renderCertificateBtn">
-            <i class="bi bi-eye me-2"></i>Visualizar no Certificado
-        </button>
-
-        <button class="btn btn-outline-primary neo-btn-outline flex-fill" type="button"
-                data-bs-toggle="collapse" data-bs-target="#optionalFields"
-                aria-expanded="false" aria-controls="optionalFields">
-            <i class="bi bi-list-check me-2"></i>Detalhes do Certificado
-        </button>
-    </div>
-
-    <!-- Campos opcionais -->
+    @* === Campos Opcionais === *@
     <div class="collapse fade" id="optionalFields">
         <hr />
-
         <div class="row g-4">
+
+            @* Carga Horária *@
             <div class="col-md-6 fade-in-up">
                 <label asp-for="CargaHoraria" class="form-label neo-label">Carga Horária</label>
-                <input asp-for="CargaHoraria" type="number" class="form-control neo-input draggable-input" />
+                <input asp-for="CargaHoraria" type="number" class="form-control neo-input draggable-input" data-field-id="CargaHoraria" />
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <input type="number" class="form-control field-font-size" data-field-id="CargaHoraria" placeholder="Tamanho (px)" value="16" />
+                </div>
+
                 <div class="form-check mt-2">
-                    <input type="checkbox" class="form-check-input show-on-certificate" />
-                    <label class="form-check-label">Mostrar no Certificado</label>
+                    <input type="checkbox" class="form-check-input show-on-certificate" id="showCargaHoraria" />
+                    <label class="form-check-label" for="showCargaHoraria">Mostrar no Certificado</label>
                 </div>
             </div>
 
+            @* Data de Início *@
             <div class="col-md-6 fade-in-up">
                 <label asp-for="DataInicio" class="form-label neo-label">Data de Início</label>
-                <input asp-for="DataInicio" type="date" class="form-control neo-input draggable-input" />
+                <input asp-for="DataInicio" type="date" class="form-control neo-input draggable-input" data-field-id="DataInicio" />
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <input type="number" class="form-control field-font-size" data-field-id="DataInicio" placeholder="Tamanho (px)" value="16" />
+                </div>
+
                 <div class="form-check mt-2">
-                    <input type="checkbox" class="form-check-input show-on-certificate" />
-                    <label class="form-check-label">Mostrar no Certificado</label>
+                    <input type="checkbox" class="form-check-input show-on-certificate" id="showDataInicio" />
+                    <label class="form-check-label" for="showDataInicio">Mostrar no Certificado</label>
                 </div>
             </div>
 
+            @* Data de Término *@
             <div class="col-md-6 fade-in-up">
                 <label asp-for="DataTermino" class="form-label neo-label">Data de Término</label>
-                <input asp-for="DataTermino" type="date" class="form-control neo-input draggable-input" />
+                <input asp-for="DataTermino" type="date" class="form-control neo-input draggable-input" data-field-id="DataTermino" />
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <input type="number" class="form-control field-font-size" data-field-id="DataTermino" placeholder="Tamanho (px)" value="16" />
+                </div>
+
                 <div class="form-check mt-2">
-                    <input type="checkbox" class="form-check-input show-on-certificate" />
-                    <label class="form-check-label">Mostrar no Certificado</label>
+                    <input type="checkbox" class="form-check-input show-on-certificate" id="showDataTermino" />
+                    <label class="form-check-label" for="showDataTermino">Mostrar no Certificado</label>
                 </div>
             </div>
 
+            @* Endereço *@
             <div class="col-md-6 fade-in-up">
                 <label asp-for="EnderecoInstituicao" class="form-label neo-label">Endereço</label>
-                <input asp-for="EnderecoInstituicao" class="form-control neo-input draggable-input" />
+                <input asp-for="EnderecoInstituicao" class="form-control neo-input draggable-input" data-field-id="EnderecoInstituicao" />
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <input type="number" class="form-control field-font-size" data-field-id="EnderecoInstituicao" placeholder="Tamanho (px)" value="16" />
+                </div>
+
                 <div class="form-check mt-2">
-                    <input type="checkbox" class="form-check-input show-on-certificate" />
-                    <label class="form-check-label">Mostrar no Certificado</label>
+                    <input type="checkbox" class="form-check-input show-on-certificate" id="showEnderecoInstituicao" />
+                    <label class="form-check-label" for="showEnderecoInstituicao">Mostrar no Certificado</label>
                 </div>
             </div>
 
+            @* Cidade *@
             <div class="col-md-6 fade-in-up">
                 <label asp-for="Cidade" class="form-label neo-label">Cidade</label>
-                <input asp-for="Cidade" class="form-control neo-input draggable-input" />
+                <input asp-for="Cidade" class="form-control neo-input draggable-input" data-field-id="Cidade" />
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <input type="number" class="form-control field-font-size" data-field-id="Cidade" placeholder="Tamanho (px)" value="16" />
+                </div>
+
                 <div class="form-check mt-2">
-                    <input type="checkbox" class="form-check-input show-on-certificate" />
-                    <label class="form-check-label">Mostrar no Certificado</label>
+                    <input type="checkbox" class="form-check-input show-on-certificate" id="showCidade" />
+                    <label class="form-check-label" for="showCidade">Mostrar no Certificado</label>
                 </div>
             </div>
 
+            @* Logo da Instituição *@
             <div class="col-md-6 fade-in-up">
                 <label asp-for="LogoInstituicao" class="form-label neo-label">Logo da Instituição</label>
                 <input type="file" name="logoFile" class="form-control neo-input" accept="image/*" />
                 <div class="form-check mt-2">
-                    <input type="checkbox" class="form-check-input show-on-certificate" />
-                    <label class="form-check-label">Mostrar no Certificado</label>
+                    <input type="checkbox" class="form-check-input show-on-certificate" id="showLogoInstituicao" />
+                    <label class="form-check-label" for="showLogoInstituicao">Mostrar no Certificado</label>
                 </div>
             </div>
 
+            @* Assinatura *@
             <div class="col-md-6 fade-in-up">
                 <label asp-for="Assinatura" class="form-label neo-label">Assinatura (opcional)</label>
                 <input type="file" name="assinaturaFile" class="form-control neo-input" accept="image/*" />
                 <div class="form-check mt-2">
-                    <input type="checkbox" class="form-check-input show-on-certificate" />
-                    <label class="form-check-label">Mostrar no Certificado</label>
+                    <input type="checkbox" class="form-check-input show-on-certificate" id="showAssinatura" />
+                    <label class="form-check-label" for="showAssinatura">Mostrar no Certificado</label>
                 </div>
             </div>
 
+            @* Nome do Responsável *@
             <div class="col-md-6 fade-in-up">
                 <label asp-for="NomeResponsavel" class="form-label neo-label">Nome do Responsável</label>
-                <input asp-for="NomeResponsavel" class="form-control neo-input draggable-input" />
+                <input asp-for="NomeResponsavel" class="form-control neo-input draggable-input" data-field-id="NomeResponsavel" />
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <input type="number" class="form-control field-font-size" data-field-id="NomeResponsavel" placeholder="Tamanho (px)" value="16" />
+                </div>
+
                 <div class="form-check mt-2">
-                    <input type="checkbox" class="form-check-input show-on-certificate" />
-                    <label class="form-check-label">Mostrar no Certificado</label>
+                    <input type="checkbox" class="form-check-input show-on-certificate" id="showNomeResponsavel" />
+                    <label class="form-check-label" for="showNomeResponsavel">Mostrar no Certificado</label>
                 </div>
             </div>
 
+            @* Cargo do Responsável *@
             <div class="col-md-6 fade-in-up">
                 <label asp-for="CargoResponsavel" class="form-label neo-label">Cargo do Responsável</label>
-                <input asp-for="CargoResponsavel" class="form-control neo-input draggable-input" />
+                <input asp-for="CargoResponsavel" class="form-control neo-input draggable-input" data-field-id="CargoResponsavel" />
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <input type="number" class="form-control field-font-size" data-field-id="CargoResponsavel" placeholder="Tamanho (px)" value="16" />
+                </div>
+
                 <div class="form-check mt-2">
-                    <input type="checkbox" class="form-check-input show-on-certificate" />
-                    <label class="form-check-label">Mostrar no Certificado</label>
+                    <input type="checkbox" class="form-check-input show-on-certificate" id="showCargoResponsavel" />
+                    <label class="form-check-label" for="showCargoResponsavel">Mostrar no Certificado</label>
                 </div>
             </div>
 
+            @* Código do Certificado *@
             <div class="col-md-6 fade-in-up">
                 <label asp-for="CodigoCertificado" class="form-label neo-label">Código do Certificado</label>
-                <input asp-for="CodigoCertificado" class="form-control neo-input draggable-input" />
+                <input asp-for="CodigoCertificado" class="form-control neo-input draggable-input" data-field-id="CodigoCertificado" />
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <input type="number" class="form-control field-font-size" data-field-id="CodigoCertificado" placeholder="Tamanho (px)" value="16" />
+                </div>
+
                 <div class="form-check mt-2">
-                    <input type="checkbox" class="form-check-input show-on-certificate" />
-                    <label class="form-check-label">Mostrar no Certificado</label>
+                    <input type="checkbox" class="form-check-input show-on-certificate" id="showCodigoCertificado" />
+                    <label class="form-check-label" for="showCodigoCertificado">Mostrar no Certificado</label>
                 </div>
             </div>
+
         </div>
     </div>
 </div>

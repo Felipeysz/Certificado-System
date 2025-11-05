@@ -26,7 +26,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeInDown">
         <h2 class="dashboard-title"><i class="bi bi-award me-2"></i>Criar Certificado</h2>
-        <a asp-controller="Certificados" asp-action="Index" class="btn btn-outline-secondary btn-logout">
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-logout">
             <i class="bi bi-arrow-left me-2"></i>Voltar
         </a>
     </div>
@@ -54,52 +54,93 @@
                             </div>
                         }
 
-                        <!-- Upload -->
+                        <!-- Upload Certificado Vazio -->
                         <div class="mb-3">
                             <label class="form-label">Upload Certificado Vazio <span class="text-danger">*</span></label>
                             <input type="file" name="certificadoVazioFile" class="form-control" accept="image/*,.pdf" required />
                             <small class="text-muted">Formatos aceitos: JPG, PNG, PDF</small>
                         </div>
 
-                        @await Html.PartialAsync("_CertificateFieldsPartial", Model)
+                        <!-- Campos do Certificado com Estilo Individual -->
+                        <div class="neo-form-section">
+
+                            <!-- Nome do Curso -->
+                            <div class="mb-4 fade-in">
+                                <label asp-for="NomeCurso" class="form-label neo-label">Nome do Curso</label>
+                                <input asp-for="NomeCurso" class="form-control neo-input draggable-input" data-field-id="NomeCurso" />
+                                <div class="d-flex gap-2 mt-2">
+                                    <select class="form-select field-font" data-field-id="NomeCurso">
+                                        @foreach (var font in googleFonts)
+                                        {
+                                            <option value="@font" style="font-family:'@font';">@font</option>
+                                        }
+                                    </select>
+                                    <input type="number" class="form-control field-font-size" data-field-id="NomeCurso" placeholder="Tamanho (px)" />
+                                    <input type="color" class="form-control field-color" data-field-id="NomeCurso" />
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" class="form-check-input show-on-certificate" id="showNomeCurso" />
+                                    <label class="form-check-label" for="showNomeCurso">Mostrar no Certificado</label>
+                                </div>
+                            </div>
+
+                            <!-- Nome da Instituição -->
+                            <div class="mb-4 fade-in">
+                                <label asp-for="NomeInstituicao" class="form-label neo-label">Nome da Instituição</label>
+                                <input asp-for="NomeInstituicao" class="form-control neo-input draggable-input" data-field-id="NomeInstituicao" />
+                                <div class="d-flex gap-2 mt-2">
+                                    <select class="form-select field-font" data-field-id="NomeInstituicao">
+                                        @foreach (var font in googleFonts)
+                                        {
+                                            <option value="@font" style="font-family:'@font';">@font</option>
+                                        }
+                                    </select>
+                                    <input type="number" class="form-control field-font-size" data-field-id="NomeInstituicao" placeholder="Tamanho (px)" />
+                                    <input type="color" class="form-control field-color" data-field-id="NomeInstituicao" />
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" class="form-check-input show-on-certificate" id="showNomeInstituicao" />
+                                    <label class="form-check-label" for="showNomeInstituicao">Mostrar no Certificado</label>
+                                </div>
+                            </div>
+
+                            <!-- Data de Emissão -->
+                            <div class="mb-4 fade-in">
+                                <label asp-for="DataEmissao" class="form-label neo-label">Data de Emissão</label>
+                                <input asp-for="DataEmissao" type="date" class="form-control neo-input draggable-input" value="@Model.DataEmissao.ToString("yyyy-MM-dd")" data-field-id="DataEmissao" />
+                                <div class="d-flex gap-2 mt-2">
+                                    <select class="form-select field-font" data-field-id="DataEmissao">
+                                        @foreach (var font in googleFonts)
+                                        {
+                                            <option value="@font" style="font-family:'@font';">@font</option>
+                                        }
+                                    </select>
+                                    <input type="number" class="form-control field-font-size" data-field-id="DataEmissao" placeholder="Tamanho (px)" />
+                                    <input type="color" class="form-control field-color" data-field-id="DataEmissao" />
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" class="form-check-input show-on-certificate" id="showDataEmissao" />
+                                    <label class="form-check-label" for="showDataEmissao">Mostrar no Certificado</label>
+                                </div>
+                            </div>
+
+
+                            <div class="d-flex gap-2 mb-4">
+                                <button type="button" class="btn btn-primary neo-btn flex-fill" id="renderCertificateBtn">
+                                    <i class="bi bi-eye me-2"></i>Visualizar no Certificado
+                                </button>
+
+                                <button class="btn btn-outline-primary neo-btn-outline flex-fill" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#optionalFields"
+                                        aria-expanded="false" aria-controls="optionalFields">
+                                    <i class="bi bi-list-check me-2"></i>Detalhes do Certificado
+                                </button>
+                            </div>
+                                @await Html.PartialAsync("_CertificateFieldsPartial")
+
+                        </div>
 
                         <hr class="my-4" />
-                        <h5 class="card-title mb-3 text-primary"><i class="bi bi-palette me-2"></i>Configurações de Estilo do Texto</h5>
-
-                        <div class="mb-3">
-                            <label class="form-label">Fonte</label>
-                            <select id="draggableFont" class="form-select">
-                                @foreach (var font in googleFonts)
-                                {
-                                    <option value="@font" style="font-family:'@font';">@font</option>
-                                }
-                            </select>
-                        </div>
-
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Tamanho (px)</label>
-                                <input type="number" id="draggableFontSize" class="form-control" value="16" min="8" max="72" />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Cor</label>
-                                <input type="color" id="draggableFontColor" class="form-control form-control-color w-100" value="#000000" />
-                            </div>
-                        </div>
-
-                        <div class="form-check mt-3">
-                            <input type="checkbox" id="draggableFontWeight" class="form-check-input" />
-                            <label class="form-check-label" for="draggableFontWeight">Negrito</label>
-                        </div>
-
-                        <div class="mb-3 mt-3">
-                            <label class="form-label">Alinhamento</label>
-                            <select id="draggableTextAlign" class="form-select">
-                                <option value="left">Esquerda</option>
-                                <option value="center" selected>Centralizado</option>
-                                <option value="right">Direita</option>
-                            </select>
-                        </div>
 
                         <div class="form-check mb-4">
                             <input class="form-check-input" type="checkbox" id="toggleDraggables" checked>
