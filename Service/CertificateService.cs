@@ -359,6 +359,10 @@ namespace AuthDemo.Services
 
                                 using (var document = new Document(pdfDoc))
                                 {
+                                    // ⭐ CRÍTICO: REMOVE TODAS AS MARGENS DO DOCUMENTO
+                                    document.SetMargins(0, 0, 0, 0);
+                                    Console.WriteLine($"✅ Margens zeradas (0, 0, 0, 0)");
+
                                     // Obtém o tamanho da primeira página
                                     var page = pdfDoc.GetFirstPage();
                                     if (page == null)
