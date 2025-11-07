@@ -5,6 +5,14 @@
     {
       "AbsoluteMoniker": "D:0:0:{C6CE82E9-2FAD-4CE1-A688-BAF4FDDF0AEE}|Certificado.csproj|c:\\users\\felip\\desktop\\certificado\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C6CE82E9-2FAD-4CE1-A688-BAF4FDDF0AEE}|Certificado.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C6CE82E9-2FAD-4CE1-A688-BAF4FDDF0AEE}|Certificado.csproj|c:\\users\\felip\\desktop\\certificado\\service\\trilhaservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C6CE82E9-2FAD-4CE1-A688-BAF4FDDF0AEE}|Certificado.csproj|solutionrelative:service\\trilhaservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C6CE82E9-2FAD-4CE1-A688-BAF4FDDF0AEE}|Certificado.csproj|c:\\users\\felip\\desktop\\certificado\\controller\\trilhascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C6CE82E9-2FAD-4CE1-A688-BAF4FDDF0AEE}|Certificado.csproj|solutionrelative:controller\\trilhascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -14,11 +22,37 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "TrilhasController.cs",
+              "DocumentMoniker": "C:\\Users\\Felip\\Desktop\\Certificado\\Controller\\TrilhasController.cs",
+              "RelativeDocumentMoniker": "Controller\\TrilhasController.cs",
+              "ToolTip": "C:\\Users\\Felip\\Desktop\\Certificado\\Controller\\TrilhasController.cs",
+              "RelativeToolTip": "Controller\\TrilhasController.cs",
+              "ViewState": "AgIAADgAAAAAAAAAAAAlwGMAAABSAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-07T16:02:32.977Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "TrilhaService.cs",
+              "DocumentMoniker": "C:\\Users\\Felip\\Desktop\\Certificado\\Service\\TrilhaService.cs",
+              "RelativeDocumentMoniker": "Service\\TrilhaService.cs",
+              "ToolTip": "C:\\Users\\Felip\\Desktop\\Certificado\\Service\\TrilhaService.cs",
+              "RelativeToolTip": "Service\\TrilhaService.cs",
+              "ViewState": "AgIAAE0AAAAAAAAAAIA7wFEAAABBAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-07T16:02:30.044Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -28,9 +62,9 @@
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\Users\\Felip\\Desktop\\Certificado\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAGUAAAAAAAAAAAAIwHMAAAASAAAAAAAAAA==",
+              "ViewState": "AgIAAFwAAAAAAAAAAAAowGEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-07T15:17:57.948Z",
+              "WhenOpened": "2025-11-07T16:01:45.629Z",
               "EditorCaption": ""
             }
           ]

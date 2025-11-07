@@ -83,9 +83,17 @@ namespace AuthDemo.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Instrutor")]
+        [Authorize(Roles = "Admin,Colaborador")]
         public async Task<IActionResult> Create(TrilhaDto dto, int[] certificadosSelecionados)
         {
+            // ✅ ADICIONE esta validação
+            if (certificadosSelecionados == null || certificadosSelecionados.Length == 0)
+            {
+                ModelState.AddModelError(string.Empty, "Selecione pelo menos um certificado");
+                ViewBag.Certificados = await _certificateService.GetAllAsync();
+                return View(dto);
+            }
+
             dto.CertificadosIds = certificadosSelecionados?.ToList() ?? new();
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "unknown";
@@ -109,7 +117,7 @@ namespace AuthDemo.Controllers
         /// Formulário para editar trilha (admin/instrutor)
         /// </summary>
         [HttpGet]
-        [Authorize(Roles = "Admin,Instrutor")]
+        [Authorize(Roles = "Admin,Colaborador")]
         public async Task<IActionResult> Edit(int id)
         {
             try

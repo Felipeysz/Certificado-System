@@ -47,8 +47,8 @@ namespace AuthDemo.Services
             // Verifica se os certificados existem
             var todosCertificados = await _certificateRepository.GetAllAsync();
             var certificadosInvalidos = dto.CertificadosIds
-                .Where(id => !todosCertificados.Any(c => c.Id == id))
-                .ToList();
+            ?.Where(id => !todosCertificados.Any(c => c.Id == id))
+            .ToList() ?? new List<int>();
 
             if (certificadosInvalidos.Any())
             {
@@ -95,8 +95,8 @@ namespace AuthDemo.Services
             // Verifica se os certificados existem
             var todosCertificados = await _certificateRepository.GetAllAsync();
             var certificadosInvalidos = dto.CertificadosIds
-                .Where(id => !todosCertificados.Any(c => c.Id == id))
-                .ToList();
+            ?.Where(id => !todosCertificados.Any(c => c.Id == id))
+            .ToList() ?? new List<int>();
 
             if (certificadosInvalidos.Any())
             {
