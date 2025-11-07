@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Certificado.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251107170308_InitialCreate")]
+    [Migration("20251107173533_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -104,10 +104,10 @@ namespace Certificado.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("DataAtualizacao")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("DataCriacao")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Descricao")
                         .HasMaxLength(500)

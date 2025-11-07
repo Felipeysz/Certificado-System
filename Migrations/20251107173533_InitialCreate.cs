@@ -48,8 +48,8 @@ namespace Certificado.Migrations
                     Nome = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Descricao = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     CertificadosIds = table.Column<string>(type: "text", nullable: false),
-                    DataCriacao = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    DataAtualizacao = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    DataCriacao = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DataAtualizacao = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Ativa = table.Column<bool>(type: "boolean", nullable: false),
                     CriadoPorId = table.Column<string>(type: "text", nullable: true)
                 },

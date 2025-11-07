@@ -101,10 +101,10 @@ namespace Certificado.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("DataAtualizacao")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("DataCriacao")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Descricao")
                         .HasMaxLength(500)
