@@ -23,9 +23,6 @@ WORKDIR /app
 # Copia os arquivos publicados da etapa de build
 COPY --from=build /app/publish .
 
-# Copia o banco SQLite da raiz do projeto
-COPY authdemo.db /app/authdemo.db
-
 # Configurações de ambiente padrão
 ENV ASPNETCORE_URLS=http://0.0.0.0:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
