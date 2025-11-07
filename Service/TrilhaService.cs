@@ -63,7 +63,7 @@ namespace AuthDemo.Services
                 CertificadosIdsList = dto.CertificadosIds,
                 Ativa = dto.Ativa,
                 CriadoPorId = criadoPorId,
-                DataCriacao = DateTime.Now
+                DataCriacao = DateTime.UtcNow
             };
 
             await _trilhaRepository.AddAsync(trilha);
@@ -108,7 +108,7 @@ namespace AuthDemo.Services
             trilha.Descricao = dto.Descricao?.Trim();
             trilha.CertificadosIdsList = dto.CertificadosIds;
             trilha.Ativa = dto.Ativa;
-            trilha.DataAtualizacao = DateTime.Now;
+            trilha.DataAtualizacao = DateTime.UtcNow;
 
             await _trilhaRepository.UpdateAsync(trilha);
 

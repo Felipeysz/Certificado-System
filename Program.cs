@@ -61,6 +61,8 @@ if (connectionString.StartsWith("postgres://") || connectionString.StartsWith("p
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 // --- JWT Key ---
 var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
 if (string.IsNullOrWhiteSpace(jwtKey))

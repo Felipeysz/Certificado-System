@@ -283,7 +283,7 @@ namespace AuthDemo.Controllers
                 var nomeTrilha = trilha.Nome ?? "Trilha";
                 var safeNome = string.Concat(nomeAluno.Trim().Split(Path.GetInvalidFileNameChars()));
                 var safeTrilha = string.Concat(nomeTrilha.Split(Path.GetInvalidFileNameChars()));
-                var outputFileName = $"{safeTrilha}_{safeNome}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf"; // 🆕 Mudou de .zip para .pdf
+                var outputFileName = $"{safeTrilha}_{safeNome}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.pdf"; // 🆕 Mudou de .zip para .pdf
 
                 Console.WriteLine($"✅ Certificados gerados: {outputFileName}");
 

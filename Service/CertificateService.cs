@@ -166,7 +166,7 @@ namespace AuthDemo.Services
                         Console.WriteLine($"  ⚠️ Certificado removido da trilha '{trilha.Nome}' ({trilha.CertificadosIdsList.Count} restantes)");
                     }
 
-                    trilha.DataAtualizacao = DateTime.Now;
+                    trilha.DataAtualizacao = DateTime.UtcNow;
                     await _trilhaRepository.UpdateAsync(trilha);
                 }
             }
@@ -621,7 +621,7 @@ namespace AuthDemo.Services
                     await writer.WriteLineAsync($"═══════════════════════════════════════════════════");
                     await writer.WriteLineAsync($"");
                     await writer.WriteLineAsync($"🎓 Aluno: {nomeAluno}");
-                    await writer.WriteLineAsync($"📅 Data: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
+                    await writer.WriteLineAsync($"📅 Data: {DateTime.UtcNow:dd/MM/yyyy HH:mm:ss}");
                     await writer.WriteLineAsync($"");
                     await writer.WriteLineAsync($"📊 ESTATÍSTICAS:");
                     await writer.WriteLineAsync($"   ✅ Total de certificados processados: {totalProcessados}");
