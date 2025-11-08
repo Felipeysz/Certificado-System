@@ -42,28 +42,36 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
+    // ⭐ ATUALIZADO: Remove margens/espaços em branco
     const adjustImageSize = () => {
-        const containerWidth = elements.certificatePreview.clientWidth;
-        const containerHeight = elements.certificatePreview.clientHeight;
-        const imgRatio = elements.certificadoVazioImg.naturalWidth / elements.certificadoVazioImg.naturalHeight;
-        const containerRatio = containerWidth / containerHeight;
+        const img = elements.certificadoVazioImg;
+        const container = elements.certificatePreview;
 
-        const [newWidth, newHeight] = imgRatio > containerRatio
-            ? [containerWidth, containerWidth / imgRatio]
-            : [containerHeight * imgRatio, containerHeight];
+        // Define dimensões exatas proporcionais
+        const containerWidth = container.clientWidth;
+        const imgRatio = img.naturalWidth / img.naturalHeight;
 
-        Object.assign(elements.certificadoVazioImg.style, {
+        const newWidth = containerWidth;
+        const newHeight = containerWidth / imgRatio;
+
+        // Ajusta container para altura exata
+        container.style.minHeight = newHeight + 'px';
+        container.style.height = newHeight + 'px';
+
+        // Define tamanho exato da imagem
+        Object.assign(img.style, {
             width: newWidth + 'px',
             height: newHeight + 'px',
-            objectFit: 'contain',
-            maxWidth: '100%',
-            maxHeight: '100%',
             display: 'block',
-            margin: '0 auto'
+            margin: '0',
+            padding: '0',
+            objectFit: 'contain'
         });
+
+        console.log(`📐 Imagem ajustada: ${newWidth}x${newHeight}px`);
     };
 
-    // ===== RENDERIZAR PDF =====
+    // ⭐ ATUALIZADO: Renderizar PDF sem margens
     const renderPDF = async (file) => {
         if (!window.pdfjsLib) {
             console.error('PDF.js não está carregado');
@@ -82,8 +90,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
             const page = await pdf.getPage(1);
 
-            // Ajusta escala
-            const containerWidth = elements.certificatePreview.clientWidth - 32;
+            // ⭐ Calcula escala para preencher container sem espaços
+            const containerWidth = elements.certificatePreview.clientWidth;
             const viewport = page.getViewport({ scale: 1 });
             const scale = containerWidth / viewport.width;
             const scaledViewport = page.getViewport({ scale });
@@ -91,8 +99,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const canvas = elements.pdfPreviewCanvas;
             const context = canvas.getContext('2d');
 
-            canvas.height = scaledViewport.height;
+            // ⭐ Define dimensões EXATAS
             canvas.width = scaledViewport.width;
+            canvas.height = scaledViewport.height;
+
+            // ⭐ Ajusta container para altura exata (sem bordas brancas)
+            elements.certificatePreview.style.minHeight = scaledViewport.height + 'px';
+            elements.certificatePreview.style.height = scaledViewport.height + 'px';
 
             // Renderiza
             currentRenderTask = page.render({
@@ -103,8 +116,15 @@ document.addEventListener('DOMContentLoaded', function () {
             await currentRenderTask.promise;
             currentRenderTask = null;
 
-            // Exibe canvas
-            canvas.style.display = 'block';
+            // ⭐ Remove qualquer margin/padding do canvas
+            Object.assign(canvas.style, {
+                display: 'block',
+                margin: '0',
+                padding: '0',
+                width: '100%',
+                height: 'auto'
+            });
+
             if (elements.certificadoVazioImg) elements.certificadoVazioImg.style.display = 'none';
 
             // Chama função global do outro script
@@ -112,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.showDraggableNomeAluno();
             }
 
-            console.log('PDF renderizado com sucesso');
+            console.log(`✅ PDF renderizado: ${scaledViewport.width}x${scaledViewport.height}px`);
 
         } catch (error) {
             if (error.name !== 'RenderingCancelledException') {
@@ -141,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     window.showDraggableNomeAluno();
                 }
 
-                console.log('Imagem carregada com sucesso');
+                console.log('✅ Imagem carregada');
             };
         };
 
@@ -283,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const removeEditingStyles = () => {
         const savedStyles = [];
 
-        // ⭐ ESCONDE COMPLETAMENTE O NOME DO ALUNO (não apenas estilos)
+        // Esconde completamente o nome do aluno
         if (elements.draggableNomeAluno) {
             const originalDisplay = elements.draggableNomeAluno.style.display;
             savedStyles.push({
@@ -335,13 +355,11 @@ document.addEventListener('DOMContentLoaded', function () {
             throw new Error('html2canvas ou jsPDF não estão carregados');
         }
 
-        // Remove estilos de edição e ESCONDE o nome do aluno
         const savedStyles = removeEditingStyles();
 
         try {
-            // Captura como imagem em ALTA RESOLUÇÃO
             const canvas = await html2canvas(elements.certificatePreview, {
-                scale: scale, // 4x = 4x a resolução original
+                scale: scale,
                 useCORS: true,
                 allowTaint: false,
                 logging: false,
@@ -350,18 +368,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 removeContainer: true
             });
 
-            // Dimensões em pontos (72 DPI)
             const imgWidth = canvas.width / scale;
             const imgHeight = canvas.height / scale;
-
-            // Converte para PDF mantendo proporções reais
-            const imgData = canvas.toDataURL('image/png', 1.0); // Qualidade máxima
+            const imgData = canvas.toDataURL('image/png', 1.0);
 
             const pdf = new jspdf.jsPDF({
                 orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
                 unit: 'pt',
                 format: [imgWidth, imgHeight],
-                compress: false // Sem compressão para máxima qualidade
+                compress: false
             });
 
             pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight, undefined, 'FAST');
@@ -369,12 +384,11 @@ document.addEventListener('DOMContentLoaded', function () {
             return pdf.output('dataurlstring');
 
         } finally {
-            // Restaura estilos de edição
             restoreEditingStyles(savedStyles);
         }
     };
 
-    // ===== PREVIEW DO CERTIFICADO (Download PDF) =====
+    // ===== PREVIEW DO CERTIFICADO =====
     elements.renderBtn?.addEventListener('click', async function (e) {
         e.preventDefault();
 
@@ -384,9 +398,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         try {
-            const pdfData = await generateCertificatePDF(4); // Scale 4 para alta qualidade
+            const pdfData = await generateCertificatePDF(4);
 
-            // Converte data URL para blob
             const arr = pdfData.split(',');
             const mime = arr[0].match(/:(.*?);/)[1];
             const bstr = atob(arr[1]);
@@ -397,13 +410,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             const blob = new Blob([u8arr], { type: mime });
 
-            // Cria link de download
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = `Certificado_Preview_${new Date().toISOString().slice(0, 10)}.pdf`;
             link.click();
 
-            // Limpa URL objeto
             setTimeout(() => URL.revokeObjectURL(link.href), 100);
 
             alert('Preview do certificado baixado com sucesso em PDF!');
@@ -433,12 +444,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const pdfBase64 = await generateCertificatePDF(5);
             elements.certificadoBase64Input.value = pdfBase64;
 
-            // ⭐ LOG DETALHADO
             console.log('📄 PDF Base64 Length:', pdfBase64.length);
-            console.log('📄 Primeiros 100 chars:', pdfBase64.substring(0, 100));
             console.log('📄 Config:', nomeAlunoConfigInput.value);
-            console.log('📄 Campo hidden existe?', elements.certificadoBase64Input !== null);
-            console.log('📄 Valor foi setado?', elements.certificadoBase64Input.value.length > 0);
 
             await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -450,17 +457,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-
-
     // ===== EVENT LISTENERS =====
-    // Atualizar divs arrastáveis
     document.querySelectorAll('.draggable-input').forEach(input => {
         input.addEventListener('input', updateDraggableDivs);
         const checkbox = input.closest('.fade-in, .fade-in-up')?.querySelector('.show-on-certificate');
         checkbox?.addEventListener('change', updateDraggableDivs);
     });
 
-    // Toggle campos arrastáveis
     elements.toggleDraggablesCheckbox?.addEventListener('change', function () {
         const display = this.checked ? 'block' : 'none';
         elements.certificatePreview.querySelectorAll('.draggable-div').forEach(d => {
@@ -468,22 +471,26 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Prevenir submit com Enter
     elements.form?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
             e.preventDefault();
         }
     });
 
-    // Ajustar imagem no resize
-    window.addEventListener('resize', () => {
+    // ⭐ ATUALIZADO: Reajusta tamanho no resize
+    window.addEventListener('resize', async () => {
         if (elements.certificadoVazioImg?.style.display !== 'none') {
             adjustImageSize();
+        } else if (elements.pdfPreviewCanvas?.style.display !== 'none') {
+            // Re-renderiza PDF para manter proporções
+            const file = elements.certificadoVazioInput?.files[0];
+            if (file && file.type === 'application/pdf') {
+                await renderPDF(file);
+            }
         }
     });
 
-    // Inicializa divs arrastáveis
     updateDraggableDivs();
 
-    console.log('Certificate Form carregado com sucesso!');
+    console.log('✅ Certificate Form carregado com sucesso!');
 });

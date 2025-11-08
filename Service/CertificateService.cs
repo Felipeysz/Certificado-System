@@ -39,6 +39,60 @@ namespace AuthDemo.Services
             _validator = new CertificateDtoValidator(_repository);
         }
 
+        /// <summary>
+        /// ⭐ NOVO: Remove margens de um PDF e retorna os bytes processados
+        /// </summary>
+        private async Task<byte[]> RemoverMargensPdfAsync(byte[] pdfBytes)
+        {
+            var outputStream = new MemoryStream();
+
+            try
+            {
+                using (var inputStream = new MemoryStream(pdfBytes))
+                {
+                    using (var reader = new PdfReader(inputStream))
+                    {
+                        using (var writer = new PdfWriter(outputStream))
+                        {
+                            writer.SetCloseStream(false);
+
+                            using (var pdfDoc = new PdfDocument(reader, writer))
+                            {
+                                // Processa todas as páginas
+                                int numPages = pdfDoc.GetNumberOfPages();
+                                Console.WriteLine($"🔧 Processando {numPages} página(s) para remover margens...");
+
+                                for (int i = 1; i <= numPages; i++)
+                                {
+                                    var page = pdfDoc.GetPage(i);
+                                    var mediaBox = page.GetMediaBox();
+
+                                    // ⭐ Remove crop box, trim box, bleed box e art box que podem causar margens
+                                    page.SetCropBox(mediaBox);
+                                    page.SetTrimBox(mediaBox);
+                                    page.SetBleedBox(mediaBox);
+                                    page.SetArtBox(mediaBox);
+
+                                    Console.WriteLine($"   Página {i}: MediaBox ajustado para {mediaBox.GetWidth()}x{mediaBox.GetHeight()}");
+                                }
+                            }
+                        }
+                    }
+                }
+
+                outputStream.Seek(0, SeekOrigin.Begin);
+                var result = outputStream.ToArray();
+                Console.WriteLine($"✅ Margens removidas com sucesso. Tamanho final: {result.Length} bytes");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ Erro ao remover margens: {ex.Message}");
+                // Retorna o PDF original se falhar
+                return pdfBytes;
+            }
+        }
+
         public async Task<(bool Success, string[] Errors)> CreateAsync(CertificateDto dto, IFormFile? certificadoVazioFile = null, IFormFile? logoFile = null, IFormFile? assinaturaFile = null)
         {
             ValidationResult result = await _validator.ValidateAsync(dto);
@@ -47,7 +101,7 @@ namespace AuthDemo.Services
 
             var safeFileNameBase = string.Concat(dto.NomeCurso.Split(IOPath.GetInvalidFileNameChars()));
 
-            // ⭐ Salva PDF no Cloud Storage
+            // ⭐ Salva PDF no Cloud Storage - VERSÃO CORRIGIDA COM REMOÇÃO DE MARGENS
             if (!string.IsNullOrEmpty(dto.CertificadoGeradoBase64))
             {
                 try
@@ -57,6 +111,11 @@ namespace AuthDemo.Services
                         : dto.CertificadoGeradoBase64;
 
                     var bytes = Convert.FromBase64String(base64Data);
+                    Console.WriteLine($"📥 PDF recebido: {bytes.Length} bytes");
+
+                    // ⭐ NOVO: Remove margens do PDF antes de salvar
+                    Console.WriteLine($"🔧 Processando PDF para remover margens...");
+                    bytes = await RemoverMargensPdfAsync(bytes);
 
                     // Upload para Cloud Storage
                     var key = $"certificados/{safeFileNameBase}/{safeFileNameBase}.pdf";
@@ -64,7 +123,7 @@ namespace AuthDemo.Services
 
                     dto.CertificadoVazio = url; // Salva URL pública
 
-                    Console.WriteLine($"✅ PDF salvo no Cloud: {url}");
+                    Console.WriteLine($"✅ PDF salvo no Cloud (sem margens): {url}");
                 }
                 catch (Exception ex)
                 {
@@ -152,10 +211,8 @@ namespace AuthDemo.Services
 
                 foreach (var trilha in trilhasAfetadas)
                 {
-                    // Remove o certificado da lista
                     trilha.CertificadosIdsList.Remove(id);
 
-                    // Se ficou sem certificados, desativa a trilha
                     if (!trilha.CertificadosIdsList.Any())
                     {
                         trilha.Ativa = false;
@@ -171,24 +228,21 @@ namespace AuthDemo.Services
                 }
             }
 
-            // ⭐ Deletar arquivos do Cloud Storage (se for URL do R2)
+            // ⭐ Deletar arquivos do Cloud Storage
             if (!string.IsNullOrEmpty(certificate.CertificadoVazio))
             {
-                // Verifica se é URL do R2 (cloud) ou caminho local
                 if (certificate.CertificadoVazio.StartsWith("https://pub-") ||
                     certificate.CertificadoVazio.StartsWith("http://") ||
                     certificate.CertificadoVazio.Contains(".r2.dev"))
                 {
                     try
                     {
-                        // Extrai o key da URL (tudo após o domínio)
                         var uri = new Uri(certificate.CertificadoVazio);
                         var key = uri.AbsolutePath.TrimStart('/');
 
                         Console.WriteLine($"🗑️ Deletando do Cloud: {key}");
                         await _cloudStorage.DeleteFileAsync(key);
 
-                        // Também deleta o arquivo .config associado
                         var safeFileNameBase = string.Concat(certificate.NomeCurso.Split(IOPath.GetInvalidFileNameChars()));
                         var configKey = $"certificados/{safeFileNameBase}/{safeFileNameBase}.config";
 
@@ -205,7 +259,6 @@ namespace AuthDemo.Services
                 }
                 else
                 {
-                    // Sistema legado: deleta do filesystem local
                     var certificadoVazioPath = IOPath.Combine(_env.WebRootPath,
                         certificate.CertificadoVazio.TrimStart('/').Replace("/", IOPath.DirectorySeparatorChar.ToString()));
                     var certificateFolder = IOPath.GetDirectoryName(certificadoVazioPath);
@@ -218,7 +271,6 @@ namespace AuthDemo.Services
                 }
             }
 
-            // ⭐ Deletar logo do Cloud (se existir)
             if (!string.IsNullOrEmpty(certificate.LogoInstituicao) &&
                 (certificate.LogoInstituicao.Contains(".r2.dev") || certificate.LogoInstituicao.StartsWith("https://pub-")))
             {
@@ -235,7 +287,6 @@ namespace AuthDemo.Services
                 }
             }
 
-            // ⭐ Deletar assinatura do Cloud (se existir)
             if (!string.IsNullOrEmpty(certificate.Assinatura) &&
                 (certificate.Assinatura.Contains(".r2.dev") || certificate.Assinatura.StartsWith("https://pub-")))
             {
@@ -256,16 +307,12 @@ namespace AuthDemo.Services
             Console.WriteLine($"✅ Certificado '{certificate.NomeCurso}' deletado com sucesso");
         }
 
-        /// <summary>
-        /// Gera certificado individual para um aluno em um curso específico
-        /// </summary>
         public async Task<byte[]> CertificarAlunoAsync(string nomeCurso, string nomeAluno)
         {
             Console.WriteLine($"🔵 Gerando certificado para: {nomeAluno} | Curso: {nomeCurso}");
 
             var safeFileNameBase = string.Concat(nomeCurso.Split(IOPath.GetInvalidFileNameChars()));
 
-            // ⭐ Baixa PDF template do Cloudflare R2
             var pdfKey = $"certificados/{safeFileNameBase}/{safeFileNameBase}.pdf";
             byte[] templateBytes;
 
@@ -278,10 +325,9 @@ namespace AuthDemo.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Erro ao baixar template: {ex.Message}");
-                throw new FileNotFoundException($"Template de certificado não encontrado no Cloud: {pdfKey}", ex);
+                throw new FileNotFoundException($"Template não encontrado: {pdfKey}", ex);
             }
 
-            // ⭐ Baixa config do Cloudflare R2
             var configKey = $"certificados/{safeFileNameBase}/{safeFileNameBase}.config";
             NomeAlunoConfig config = new NomeAlunoConfig();
 
@@ -295,24 +341,21 @@ namespace AuthDemo.Services
                 options.Converters.Add(new NumberOrStringToStringConverter());
                 config = JsonSerializer.Deserialize<NomeAlunoConfig>(configJson, options) ?? new NomeAlunoConfig();
 
-                Console.WriteLine($"✅ Config carregada: {configJson}");
+                Console.WriteLine($"✅ Config carregada");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"⚠️ Config não encontrada, usando valores padrão: {ex.Message}");
+                Console.WriteLine($"⚠️ Config não encontrada, usando padrão: {ex.Message}");
             }
 
-            // ⭐ MODIFICAÇÃO: Calcular largura máxima e ajustar fonte
             float maxWidth = config.Width > 0 ? config.Width : 400f;
 
-            // Parse do tamanho base da fonte
             float baseFontSize = float.TryParse(
                 (config.BaseFontSize ?? config.FontSize ?? "24px").Replace("px", "").Replace(",", "."),
                 System.Globalization.NumberStyles.Any,
                 System.Globalization.CultureInfo.InvariantCulture,
                 out var bfs) ? bfs : 24f;
 
-            // Parse das outras configurações
             float x = float.TryParse(
                 (config.Left ?? "0").Replace("px", "").Replace(",", "."),
                 System.Globalization.NumberStyles.Any,
@@ -327,108 +370,59 @@ namespace AuthDemo.Services
 
             bool isBold = (config.FontWeight ?? "regular").ToLower() == "bold";
 
-            // ⭐ Gera PDF com iText7 - Versão Robusta
             var outputStream = new MemoryStream();
 
             try
             {
                 Console.WriteLine($"🔧 Iniciando geração do PDF...");
 
-                // Cria uma cópia do template bytes para não afetar o original
                 byte[] workingBytes = new byte[templateBytes.Length];
                 Array.Copy(templateBytes, workingBytes, templateBytes.Length);
 
                 using (var templateStream = new MemoryStream(workingBytes))
                 {
-                    // Configurações do Reader para ser mais tolerante
                     var readerProperties = new ReaderProperties();
 
-                    Console.WriteLine($"📖 Criando PDF Reader...");
                     using (var reader = new PdfReader(templateStream, readerProperties))
                     {
-                        Console.WriteLine($"✏️ Criando PDF Writer...");
                         using (var writer = new PdfWriter(outputStream))
                         {
-                            // Importante: não fechar o stream de saída automaticamente
                             writer.SetCloseStream(false);
 
-                            Console.WriteLine($"📄 Criando PDF Document...");
                             using (var pdfDoc = new PdfDocument(reader, writer))
                             {
-                                Console.WriteLine($"📝 Número de páginas: {pdfDoc.GetNumberOfPages()}");
+                                var page = pdfDoc.GetFirstPage();
+                                if (page == null)
+                                    throw new Exception("PDF sem páginas válidas");
+
+                                var pageSize = page.GetPageSize();
+                                Console.WriteLine($"📄 Tamanho: {pageSize.GetWidth()}x{pageSize.GetHeight()}");
 
                                 using (var document = new Document(pdfDoc))
                                 {
-                                    // ⭐ CRÍTICO: REMOVE TODAS AS MARGENS DO DOCUMENTO
+                                    // ⭐ MARGENS ZERADAS
                                     document.SetMargins(0, 0, 0, 0);
-                                    Console.WriteLine($"✅ Margens zeradas (0, 0, 0, 0)");
+                                    document.SetTopMargin(0);
+                                    document.SetRightMargin(0);
+                                    document.SetBottomMargin(0);
+                                    document.SetLeftMargin(0);
 
-                                    // Obtém o tamanho da primeira página
-                                    var page = pdfDoc.GetFirstPage();
-                                    if (page == null)
-                                    {
-                                        throw new Exception("PDF não contém páginas válidas");
-                                    }
+                                    PdfFont font = isBold
+                                        ? PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD)
+                                        : PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
 
-                                    var pageSize = page.GetPageSize();
-                                    Console.WriteLine($"📄 Tamanho da página: {pageSize.GetWidth()}x{pageSize.GetHeight()}");
-
-                                    // Seleciona fonte ANTES de calcular coordenadas
-                                    Console.WriteLine($"🔤 Carregando fonte {(isBold ? "Bold" : "Regular")}...");
-                                    PdfFont font;
-                                    if (isBold)
-                                    {
-                                        font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
-                                    }
-                                    else
-                                    {
-                                        font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
-                                    }
-
-                                    // ⭐ AUTO-AJUSTE DO TAMANHO DA FONTE
                                     float fontSize = baseFontSize;
                                     float textWidth = font.GetWidth(nomeAluno, fontSize);
 
-                                    Console.WriteLine($"📏 Tamanho inicial da fonte: {fontSize}px");
-                                    Console.WriteLine($"📏 Largura do texto: {textWidth}px / Máxima: {maxWidth}px");
-
-                                    // Se o texto não couber, diminui a fonte progressivamente
                                     while (textWidth > maxWidth && fontSize > 8)
                                     {
                                         fontSize -= 0.5f;
                                         textWidth = font.GetWidth(nomeAluno, fontSize);
                                     }
 
-                                    if (fontSize != baseFontSize)
-                                    {
-                                        Console.WriteLine($"📏 Auto-ajuste aplicado: {baseFontSize}px → {fontSize}px");
-                                        Console.WriteLine($"   Largura do texto: {textWidth}px / Máxima: {maxWidth}px");
-                                    }
-
-                                    // ⭐ CALCULA Y SOMENTE APÓS AJUSTE FINAL DA FONTE (CRÍTICO)
-                                    // ⭐ AJUSTE: Subtrai 17px adicionais para posicionar mais abaixo
                                     float pdfY = pageSize.GetHeight() - y - fontSize - 17f;
 
-                                    Console.WriteLine($"📐 Coordenadas finais aplicadas:");
-                                    Console.WriteLine($"   - HTML Y (top): {y}px");
-                                    Console.WriteLine($"   - Altura da página: {pageSize.GetHeight()}px");
-                                    Console.WriteLine($"   - FontSize final: {fontSize}px");
-                                    Console.WriteLine($"   - Ajuste adicional: -17px");
-                                    Console.WriteLine($"   - PDF Y calculado: {pdfY}px");
-                                    Console.WriteLine($"   - Fórmula: {pageSize.GetHeight()} - {y} - {fontSize} - 17 = {pdfY}");
-                                    Console.WriteLine($"   - Posição X: {x}px");
-                                    Console.WriteLine($"   - Negrito: {isBold}");
-                                    Console.WriteLine($"   - Cor: {config.Color ?? "black"}");
-                                    Console.WriteLine($"   - Alinhamento: {config.TextAlign ?? "center"}");
-
-                                    // Parse da cor
                                     DeviceRgb color = ParseColor(config.Color ?? "black");
-                                    Console.WriteLine($"🎨 Cor aplicada: {config.Color ?? "black"}");
-
-                                    // Cria parágrafo com o nome do aluno
-                                    Console.WriteLine($"✍️ Adicionando texto: '{nomeAluno}'");
-
-                                    // ⭐ CORREÇÃO CRÍTICA: Usa largura da página inteira
                                     float paragraphWidth = pageSize.GetWidth() - (x * 2);
 
                                     var paragraph = new Paragraph(nomeAluno)
@@ -437,15 +431,13 @@ namespace AuthDemo.Services
                                         .SetFontColor(color)
                                         .SetFixedPosition(x, pdfY, paragraphWidth)
                                         .SetWidth(paragraphWidth)
-                                        .SetMaxWidth(paragraphWidth);
+                                        .SetMaxWidth(paragraphWidth)
+                                        .SetMargin(0)
+                                        .SetPadding(0);
 
-                                    // ⭐ FORÇA TEXTO EM UMA ÚNICA LINHA (CRÍTICO)
-                                    paragraph.SetProperty(iText.Layout.Properties.Property.NO_SOFT_WRAP_INLINE, true);
+                                    paragraph.SetProperty(Property.NO_SOFT_WRAP_INLINE, true);
 
-                                    // Alinhamento
                                     var alignment = (config.TextAlign ?? "center").ToLower();
-                                    Console.WriteLine($"↔️ Alinhamento: {alignment}");
-
                                     switch (alignment)
                                     {
                                         case "center":
@@ -460,82 +452,27 @@ namespace AuthDemo.Services
                                     }
 
                                     document.Add(paragraph);
-                                    Console.WriteLine($"✅ Texto adicionado ao documento com sucesso");
-                                    Console.WriteLine($"   Posição final: X={x}, Y={pdfY}");
-                                    Console.WriteLine($"   Tamanho: {fontSize}px");
-                                    Console.WriteLine($"   Largura disponível: {paragraphWidth}px");
+                                    Console.WriteLine($"✅ Texto adicionado: X={x}, Y={pdfY}, Size={fontSize}px");
                                 }
-
-                                Console.WriteLine($"📦 Document fechado");
                             }
-
-                            Console.WriteLine($"📦 PdfDocument fechado");
                         }
-
-                        Console.WriteLine($"📦 Writer fechado");
                     }
-
-                    Console.WriteLine($"📦 Reader fechado");
                 }
 
                 outputStream.Seek(0, SeekOrigin.Begin);
                 var resultBytes = outputStream.ToArray();
 
-                Console.WriteLine($"✅ Certificado gerado com sucesso: {resultBytes.Length} bytes");
+                Console.WriteLine($"✅ Certificado gerado: {resultBytes.Length} bytes");
 
                 return resultBytes;
             }
             catch (Exception ex)
             {
-                // Log detalhado do erro
-                Console.WriteLine($"❌ Erro ao processar PDF");
-                Console.WriteLine($"   Tipo da Exception: {ex.GetType().FullName}");
-                Console.WriteLine($"   Mensagem: {ex.Message}");
-                Console.WriteLine($"   StackTrace: {ex.StackTrace}");
-
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"   Inner Exception Tipo: {ex.InnerException.GetType().FullName}");
-                    Console.WriteLine($"   Inner Exception Mensagem: {ex.InnerException.Message}");
-                    Console.WriteLine($"   Inner StackTrace: {ex.InnerException.StackTrace}");
-                }
-
-                // Identifica tipo de erro baseado no tipo da exceção
-                var exceptionTypeName = ex.GetType().FullName ?? "";
-
-                if (exceptionTypeName.Contains("iText"))
-                {
-                    throw new Exception($"Erro do iText7 ao processar PDF: {ex.Message}. Possíveis causas: PDF protegido por senha, corrompido ou com estrutura inválida.", ex);
-                }
-                else if (ex is InvalidOperationException)
-                {
-                    throw new Exception($"Operação inválida ao processar PDF: {ex.Message}", ex);
-                }
-                else if (ex is ArgumentException)
-                {
-                    throw new Exception($"Argumento inválido ao processar PDF: {ex.Message}", ex);
-                }
-                else
-                {
-                    throw new Exception($"Erro inesperado ao gerar certificado: {ex.Message}", ex);
-                }
-            }
-            finally
-            {
-                // Garante limpeza do stream se necessário
-                if (outputStream?.Length == 0)
-                {
-                    outputStream?.Dispose();
-                }
+                Console.WriteLine($"❌ Erro: {ex.Message}");
+                throw new Exception($"Erro ao gerar certificado: {ex.Message}", ex);
             }
         }
 
-        /// <summary>
-        /// 🆕 Gera múltiplos certificados para um único aluno (Trilha/Curso Completo)
-        /// </summary>
-        /// <param name="certificateIds">IDs dos certificados (módulos) selecionados</param>
-        /// <param name="nomeAluno">Nome do aluno para preencher em todos os certificados</param>
-        /// <returns>ZIP contendo todos os certificados gerados</returns>
         public async Task<MemoryStream> GerarTrilhaCertificadosAsync(List<int> certificateIds, string nomeAluno)
         {
             if (certificateIds == null || !certificateIds.Any())
@@ -544,8 +481,8 @@ namespace AuthDemo.Services
             if (string.IsNullOrWhiteSpace(nomeAluno))
                 throw new ArgumentException("Nome do aluno é obrigatório.");
 
-            Console.WriteLine($"🎓 Iniciando geração de trilha de certificados para: {nomeAluno}");
-            Console.WriteLine($"📚 Total de certificados selecionados: {certificateIds.Count}");
+            Console.WriteLine($"🎓 Trilha para: {nomeAluno}");
+            Console.WriteLine($"📚 Total: {certificateIds.Count}");
 
             var outputStream = new MemoryStream();
 
@@ -558,7 +495,6 @@ namespace AuthDemo.Services
                 var certificadosGerados = new List<string>();
                 var errosDetalhados = new List<string>();
 
-                // Busca os certificados do banco
                 var todosCertificados = await _repository.GetAllAsync();
 
                 foreach (var certId in certificateIds)
@@ -569,7 +505,7 @@ namespace AuthDemo.Services
                     if (certificado == null)
                     {
                         totalErros++;
-                        var erro = $"Certificado ID {certId} não encontrado no banco de dados";
+                        var erro = $"Certificado ID {certId} não encontrado";
                         Console.WriteLine($"  ❌ {erro}");
                         errosDetalhados.Add(erro);
                         continue;
@@ -577,59 +513,44 @@ namespace AuthDemo.Services
 
                     try
                     {
-                        Console.WriteLine($"  ➡️ [{totalProcessados}/{certificateIds.Count}] Gerando: {certificado.NomeCurso}");
+                        Console.WriteLine($"  ➡️ [{totalProcessados}/{certificateIds.Count}] {certificado.NomeCurso}");
 
-                        // Gera o certificado usando o método existente
                         var pdfBytes = await CertificarAlunoAsync(certificado.NomeCurso, nomeAluno.Trim());
 
-                        // Sanitiza o nome do arquivo
                         var safeFileName = string.Concat(certificado.NomeCurso.Split(IOPath.GetInvalidFileNameChars()));
                         var entryName = $"{safeFileName}.pdf";
 
-                        // Adiciona ao ZIP
                         var entry = archive.CreateEntry(entryName);
                         await using var entryStream = entry.Open();
                         await entryStream.WriteAsync(pdfBytes);
 
                         totalSucesso++;
                         certificadosGerados.Add(certificado.NomeCurso);
-                        Console.WriteLine($"  ✅ Certificado gerado: {entryName}");
+                        Console.WriteLine($"  ✅ {entryName}");
                     }
                     catch (Exception ex)
                     {
                         totalErros++;
-                        var erro = $"Erro ao gerar '{certificado.NomeCurso}': {ex.Message}";
+                        var erro = $"Erro '{certificado.NomeCurso}': {ex.Message}";
                         Console.WriteLine($"  ❌ {erro}");
                         errosDetalhados.Add(erro);
-
-                        // Adiciona arquivo de erro no ZIP
-                        try
-                        {
-                            var safeFileName = string.Concat(certificado.NomeCurso.Split(IOPath.GetInvalidFileNameChars()));
-                            var errorEntry = archive.CreateEntry($"_ERROS/{safeFileName}_erro.txt");
-                            await using var errorStream = errorEntry.Open();
-                            await using var writer = new StreamWriter(errorStream);
-                            await writer.WriteAsync($"Erro ao gerar certificado '{certificado.NomeCurso}':\n\n{ex.Message}\n\n{ex.StackTrace}");
-                        }
-                        catch { /* Ignora erro ao criar log */ }
                     }
                 }
 
-                // ⭐ Adiciona arquivo de resumo
                 var summaryEntry = archive.CreateEntry("_RESUMO.txt");
                 await using (var summaryStream = summaryEntry.Open())
                 await using (var writer = new StreamWriter(summaryStream))
                 {
                     await writer.WriteLineAsync($"═══════════════════════════════════════════════════");
-                    await writer.WriteLineAsync($"  TRILHA DE CERTIFICADOS - RESUMO DA GERAÇÃO");
+                    await writer.WriteLineAsync($"  TRILHA DE CERTIFICADOS - RESUMO");
                     await writer.WriteLineAsync($"═══════════════════════════════════════════════════");
                     await writer.WriteLineAsync($"");
                     await writer.WriteLineAsync($"🎓 Aluno: {nomeAluno}");
                     await writer.WriteLineAsync($"📅 Data: {DateTime.UtcNow:dd/MM/yyyy HH:mm:ss}");
                     await writer.WriteLineAsync($"");
                     await writer.WriteLineAsync($"📊 ESTATÍSTICAS:");
-                    await writer.WriteLineAsync($"   ✅ Total de certificados processados: {totalProcessados}");
-                    await writer.WriteLineAsync($"   ✅ Certificados gerados com sucesso: {totalSucesso}");
+                    await writer.WriteLineAsync($"   ✅ Processados: {totalProcessados}");
+                    await writer.WriteLineAsync($"   ✅ Sucesso: {totalSucesso}");
                     await writer.WriteLineAsync($"   ❌ Erros: {totalErros}");
                     await writer.WriteLineAsync($"");
 
@@ -645,7 +566,7 @@ namespace AuthDemo.Services
 
                     if (errosDetalhados.Any())
                     {
-                        await writer.WriteLineAsync($"❌ ERROS ENCONTRADOS:");
+                        await writer.WriteLineAsync($"❌ ERROS:");
                         foreach (var erro in errosDetalhados)
                         {
                             await writer.WriteLineAsync($"   • {erro}");
@@ -657,19 +578,13 @@ namespace AuthDemo.Services
                 }
 
                 Console.WriteLine($"");
-                Console.WriteLine($"✅ Trilha de certificados concluída:");
-                Console.WriteLine($"   📚 Total: {totalProcessados}");
-                Console.WriteLine($"   ✅ Sucesso: {totalSucesso}");
-                Console.WriteLine($"   ❌ Erros: {totalErros}");
+                Console.WriteLine($"✅ Concluído: {totalSucesso}/{totalProcessados}");
             }
 
             outputStream.Seek(0, SeekOrigin.Begin);
             return outputStream;
         }
 
-        /// <summary>
-        /// Converte string de cor para DeviceRgb
-        /// </summary>
         private DeviceRgb ParseColor(string colorString)
         {
             if (string.IsNullOrWhiteSpace(colorString))
@@ -677,14 +592,12 @@ namespace AuthDemo.Services
 
             colorString = colorString.Trim().ToLower();
 
-            // Cores nomeadas básicas
             if (colorString == "black") return new DeviceRgb(0, 0, 0);
             if (colorString == "white") return new DeviceRgb(255, 255, 255);
             if (colorString == "red") return new DeviceRgb(255, 0, 0);
             if (colorString == "green") return new DeviceRgb(0, 255, 0);
             if (colorString == "blue") return new DeviceRgb(0, 0, 255);
 
-            // Formato hexadecimal (#RRGGBB)
             if (colorString.StartsWith("#"))
             {
                 colorString = colorString.TrimStart('#');
@@ -702,7 +615,6 @@ namespace AuthDemo.Services
             return new DeviceRgb(0, 0, 0);
         }
 
-        // Config auxiliar
         public class NomeAlunoConfig
         {
             public string Top { get; set; } = "0";
