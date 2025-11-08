@@ -349,43 +349,66 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     };
 
-    // ===== GERAÇÃO DO CERTIFICADO EM PDF (ALTA QUALIDADE) =====
-    const generateCertificatePDF = async (scale = 4) => {
-        if (!window.html2canvas || !window.jspdf) {
-            throw new Error('html2canvas ou jsPDF não estão carregados');
+    // ===== FUNÇÕES PARA REMOVER/RESTAURAR ESTILOS DE EDIÇÃO =====
+    const removeEditingStyles = () => {
+        const savedStyles = [];
+
+        // Remove a borda azul da área de preview
+        if (elements.certificatePreview) {
+            const originalPreviewStyles = {
+                border: elements.certificatePreview.style.border,
+                outline: elements.certificatePreview.style.outline,
+                boxShadow: elements.certificatePreview.style.boxShadow
+            };
+            savedStyles.push({
+                element: elements.certificatePreview,
+                styles: originalPreviewStyles
+            });
+            Object.assign(elements.certificatePreview.style, {
+                border: 'none',
+                outline: 'none',
+                boxShadow: 'none'
+            });
         }
 
-        const savedStyles = removeEditingStyles();
-
-        try {
-            const canvas = await html2canvas(elements.certificatePreview, {
-                scale: scale,
-                useCORS: true,
-                allowTaint: false,
-                logging: false,
-                backgroundColor: null,
-                imageTimeout: 0,
-                removeContainer: true
+        // Esconde completamente o nome do aluno
+        if (elements.draggableNomeAluno) {
+            const originalDisplay = elements.draggableNomeAluno.style.display;
+            savedStyles.push({
+                element: elements.draggableNomeAluno,
+                styles: { display: originalDisplay }
             });
-
-            const imgWidth = canvas.width / scale;
-            const imgHeight = canvas.height / scale;
-            const imgData = canvas.toDataURL('image/png', 1.0);
-
-            const pdf = new jspdf.jsPDF({
-                orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
-                unit: 'pt',
-                format: [imgWidth, imgHeight],
-                compress: false
-            });
-
-            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight, undefined, 'FAST');
-
-            return pdf.output('dataurlstring');
-
-        } finally {
-            restoreEditingStyles(savedStyles);
+            elements.draggableNomeAluno.style.display = 'none';
         }
+
+        // Remove estilos dos campos opcionais arrastáveis
+        const draggableDivs = elements.certificatePreview.querySelectorAll('.draggable-div');
+        draggableDivs.forEach(div => {
+            if (div.dataset.isEditing === 'true') {
+                const originalStyles = {
+                    cursor: div.style.cursor,
+                    padding: div.style.padding,
+                    background: div.style.background,
+                    border: div.style.border,
+                    borderRadius: div.style.borderRadius,
+                    minWidth: div.style.minWidth,
+                    minHeight: div.style.minHeight
+                };
+                savedStyles.push({ element: div, styles: originalStyles });
+
+                Object.assign(div.style, {
+                    cursor: 'default',
+                    padding: '0',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '0',
+                    minWidth: 'auto',
+                    minHeight: 'auto'
+                });
+            }
+        });
+
+        return savedStyles;
     };
 
     // ===== PREVIEW DO CERTIFICADO =====
