@@ -423,7 +423,8 @@ namespace AuthDemo.Services
                                     float pdfY = pageSize.GetHeight() - y - fontSize - 17f;
 
                                     DeviceRgb color = ParseColor(config.Color ?? "black");
-                                    float paragraphWidth = pageSize.GetWidth() - (x * 2);
+
+                                    float paragraphWidth = config.Width > 0 ? config.Width : 400f;
 
                                     var paragraph = new Paragraph(nomeAluno)
                                         .SetFont(font)
@@ -437,6 +438,7 @@ namespace AuthDemo.Services
 
                                     paragraph.SetProperty(Property.NO_SOFT_WRAP_INLINE, true);
 
+                                    // ⭐ Aplica alinhamento DENTRO da largura configurada
                                     var alignment = (config.TextAlign ?? "center").ToLower();
                                     switch (alignment)
                                     {
@@ -452,7 +454,7 @@ namespace AuthDemo.Services
                                     }
 
                                     document.Add(paragraph);
-                                    Console.WriteLine($"✅ Texto adicionado: X={x}, Y={pdfY}, Size={fontSize}px");
+                                    Console.WriteLine($"✅ Texto adicionado: X={x}, Y={pdfY}, Width={paragraphWidth}, Size={fontSize}px, Align={alignment}");
                                 }
                             }
                         }
