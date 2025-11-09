@@ -170,18 +170,23 @@ document.addEventListener('DOMContentLoaded', function () {
     // ===== MOSTRAR DRAGGABLE =====
     window.showDraggableNomeAluno = () => {
         if (!el.draggable) return;
-
+    
         el.draggable.style.display = 'block';
-        document.getElementById('positionInfo')?.style.display = 'block';
-
+        
+        // Corrigido aqui:
+        const positionInfo = document.getElementById('positionInfo');
+        if (positionInfo) {
+            positionInfo.style.display = 'block';
+        }
+    
         if (!state.isInitialized) {
             el.draggable.style.transform = 'translate(0px, 0px)';
             el.draggable.setAttribute('data-x', 0);
             el.draggable.setAttribute('data-y', 0);
         }
-
+    
         updateContent();
-
+    
         setTimeout(() => {
             if (!state.isInitialized) initializeDraggable();
             if (!state.isLocked) autoAdjustFontSize();
