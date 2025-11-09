@@ -29,7 +29,7 @@
 /* ===== Cards ===== */
 .neo-card {
     background: var(--white);
-    border-radius: var(--radius-2xl);
+    border-radius: 0 !important;
     border: 1px solid var(--border-light);
     box-shadow: var(--shadow-md);
     transition: transform var(--transition-fast), box-shadow var(--transition-fast);
@@ -58,7 +58,7 @@
 
 .form-control, .form-select {
     border: 2px solid var(--border-light);
-    border-radius: var(--radius-md);
+    border-radius: 0 !important;
     transition: all var(--transition-base);
 }
 
