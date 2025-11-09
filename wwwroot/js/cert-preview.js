@@ -16,10 +16,20 @@ document.addEventListener('DOMContentLoaded', function () {
             el.img.src = '';
             el.img.style.display = 'none';
         }
-        if (el.canvas) el.canvas.style.display = 'none';
+        if (el.canvas) {
+            const ctx = el.canvas.getContext('2d');
+            ctx.clearRect(0, 0, el.canvas.width, el.canvas.height);
+            el.canvas.style.display = 'none';
+            el.canvas.width = 0;
+            el.canvas.height = 0;
+        }
         
         const positionInfo = document.getElementById('positionInfo');
         if (positionInfo) positionInfo.style.display = 'none';
+        
+        // Esconder draggable se existir
+        const draggable = document.getElementById('draggableNomeAluno');
+        if (draggable) draggable.style.display = 'none';
         
         if (el.placeholder) el.placeholder.style.display = 'flex';
 
@@ -34,11 +44,14 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     const renderImage = (file) => {
+        // Limpar preview anterior
+        resetPreview();
+        
         const reader = new FileReader();
         reader.onload = (e) => {
             el.img.src = e.target.result;
             el.img.style.display = 'block';
-            if (el.canvas) el.canvas.style.display = 'none';
+            if (el.placeholder) el.placeholder.style.display = 'none';
 
             el.img.onload = () => {
                 const containerWidth = el.preview.clientWidth;
@@ -55,7 +68,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     padding: '0',
                     objectFit: 'contain',
                     maxWidth: '100%',
-                    maxHeight: '100%'
+                    maxHeight: '100%',
+                    position: 'absolute',
+                    top: '0',
+                    left: '0'
                 });
 
                 if (window.showDraggableNomeAluno) {
@@ -74,6 +90,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        // Limpar preview anterior
+        resetPreview();
+
         try {
             if (currentPdfTask) {
                 await currentPdfTask.cancel();
@@ -88,8 +107,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const scale = containerWidth / viewport.width;
             const scaledViewport = page.getViewport({ scale });
 
+            // Ajustar canvas para o tamanho exato
             el.canvas.width = scaledViewport.width;
             el.canvas.height = scaledViewport.height;
+            
+            // Ajustar container
             adjustContainer(scaledViewport.width, scaledViewport.height);
 
             currentPdfTask = page.render({
@@ -100,18 +122,22 @@ document.addEventListener('DOMContentLoaded', function () {
             await currentPdfTask.promise;
             currentPdfTask = null;
 
+            // Aplicar estilos para evitar bordas e overflow
             Object.assign(el.canvas.style, {
                 display: 'block',
-                width: '100%',
-                height: '100%',
+                width: scaledViewport.width + 'px',
+                height: scaledViewport.height + 'px',
                 margin: '0',
                 padding: '0',
                 objectFit: 'contain',
                 maxWidth: '100%',
-                maxHeight: '100%'
+                maxHeight: '100%',
+                position: 'absolute',
+                top: '0',
+                left: '0'
             });
 
-            if (el.img) el.img.style.display = 'none';
+            if (el.placeholder) el.placeholder.style.display = 'none';
             
             if (window.showDraggableNomeAluno) {
                 window.showDraggableNomeAluno();
@@ -162,8 +188,6 @@ document.addEventListener('DOMContentLoaded', function () {
             resetPreview();
             return;
         }
-
-        if (el.placeholder) el.placeholder.style.display = 'none';
         
         // Renderizar baseado no tipo
         if (file.type === 'application/pdf') {
