@@ -1,4 +1,4 @@
-﻿// ===== CERT-NOME-ALUNO.JS - Configuração do nome do aluno no certificado =====
+// ===== CERT-NOME-ALUNO.JS - Configuração do nome do aluno no certificado =====
 document.addEventListener('DOMContentLoaded', function () {
     const el = {
         form: document.getElementById('certificateForm'),
@@ -170,23 +170,23 @@ document.addEventListener('DOMContentLoaded', function () {
     // ===== MOSTRAR DRAGGABLE =====
     window.showDraggableNomeAluno = () => {
         if (!el.draggable) return;
-    
+
         el.draggable.style.display = 'block';
         
-        // Corrigido aqui:
+        // Corrigido: não usar optional chaining no lado esquerdo
         const positionInfo = document.getElementById('positionInfo');
         if (positionInfo) {
             positionInfo.style.display = 'block';
         }
-    
+
         if (!state.isInitialized) {
             el.draggable.style.transform = 'translate(0px, 0px)';
             el.draggable.setAttribute('data-x', 0);
             el.draggable.setAttribute('data-y', 0);
         }
-    
+
         updateContent();
-    
+
         setTimeout(() => {
             if (!state.isInitialized) initializeDraggable();
             if (!state.isLocked) autoAdjustFontSize();
@@ -239,7 +239,12 @@ document.addEventListener('DOMContentLoaded', function () {
             <i class="bi bi-check-circle-fill me-2"></i>Configuração salva com sucesso!
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
-        document.querySelector('.neo-container')?.insertBefore(alert, document.querySelector('.neo-container').firstChild);
+        
+        const neoContainer = document.querySelector('.neo-container');
+        if (neoContainer) {
+            neoContainer.insertBefore(alert, neoContainer.firstChild);
+        }
+        
         setTimeout(() => alert.remove(), 5000);
 
         console.log('💾 Config salva:', config);
