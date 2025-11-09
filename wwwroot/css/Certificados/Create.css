@@ -106,64 +106,83 @@
 }
 
 /* ===== Draggables e Pré-visualização ===== */
+/* ⭐ CRÍTICO: Container dinâmico sem altura mínima fixa */
 .certificate-preview-area {
-    min-height: 450px;
     background: var(--gray-50);
     border: 2px dashed var(--border-light);
     position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0; /* ⭐ Remove padding */
+    overflow: visible; /* Permite que conteúdo seja visível */
+    display: block; /* Remove flex para não forçar centralização */
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    /* ⭐ Remove min-height fixa - será definida dinamicamente pelo JS */
 }
 
 .preview-placeholder {
     color: var(--text-muted);
     animation: fadeIn 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 450px; /* Apenas para placeholder */
 }
 
-/* ⭐ NOVO: Canvas sem margens/bordas */
+/* ⭐ Canvas ocupa 100% do container, sem margens */
 .pdf-preview-canvas {
-    display: block;
-    max-width: 100%;
-    height: auto;
-    margin: 0;
-    padding: 0;
-    border: none;
-    border-radius: 0; /* Remove arredondamento */
-}
-
-/* ⭐ NOVO: Imagem sem margens/bordas */
-#certificadoVazioImg {
-    display: block;
-    max-width: 100%;
-    height: auto;
-    margin: 0;
-    padding: 0;
-    border: none;
-    border-radius: 0;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
     object-fit: contain;
 }
 
+/* ⭐ Imagem ocupa 100% do container, sem margens */
+#certificadoVazioImg {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    object-fit: contain;
+}
+
+/* ⭐ Campos arrastáveis posicionados sobre o certificado */
 .draggable-field {
     position: absolute;
     cursor: move;
     user-select: none;
     z-index: 10;
+    padding: 4px 8px;
+    background: rgba(255, 235, 59, 0.3);
+    border: 2px dashed #ffc107;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
 }
+
+    .draggable-field:hover {
+        background: rgba(255, 235, 59, 0.5);
+        border-color: #ff9800;
+    }
+
+    .draggable-field.dragging {
+        opacity: 0.8;
+        cursor: grabbing !important;
+    }
 
 .draggable-text {
     font-weight: var(--font-semibold);
-    background: rgba(255, 255, 255, 0.5);
-    padding: 2px 6px;
-    border-radius: var(--radius-sm);
-    transition: transform var(--transition-fast);
+    display: block;
+    white-space: nowrap;
 }
-
-    .draggable-text:hover {
-        transform: scale(1.05);
-    }
 
 .drag-handle {
     display: none;
@@ -180,6 +199,20 @@
 .draggable-field:hover .drag-handle {
     display: block;
 }
+
+/* ⭐ Campos opcionais arrastáveis */
+.draggable-div {
+    position: absolute;
+    cursor: move;
+    user-select: none;
+    z-index: 5;
+    white-space: nowrap;
+    transition: all var(--transition-fast);
+}
+
+    .draggable-div:hover {
+        transform: scale(1.02);
+    }
 
 /* ===== Position Info ===== */
 #positionInfo {
@@ -246,5 +279,24 @@
 @media (max-width: 992px) {
     .sticky-preview {
         position: static;
+    }
+
+    .certificate-preview-area {
+        margin-bottom: 2rem;
+    }
+}
+
+/* ⭐ Ajustes para zoom da página */
+@media screen {
+    .certificate-preview-area {
+        /* Garante que o container se adapte ao zoom */
+        box-sizing: border-box;
+    }
+
+    .pdf-preview-canvas,
+    #certificadoVazioImg {
+        /* Mantém proporções no zoom */
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
     }
 }

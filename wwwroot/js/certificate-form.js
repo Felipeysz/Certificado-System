@@ -40,38 +40,45 @@ document.addEventListener('DOMContentLoaded', function () {
         if (elements.previewPlaceholder) {
             elements.previewPlaceholder.style.display = 'flex';
         }
+        // Reseta altura do container
+        elements.certificatePreview.style.height = 'auto';
+        elements.certificatePreview.style.minHeight = '450px';
     };
 
-    // ⭐ ATUALIZADO: Remove margens/espaços em branco
+    // ⭐ NOVO: Ajusta imagem para ocupar exatamente o container
     const adjustImageSize = () => {
         const img = elements.certificadoVazioImg;
         const container = elements.certificatePreview;
 
-        // Define dimensões exatas proporcionais
+        if (!img || !img.naturalWidth) return;
+
+        // Largura do container (100%)
         const containerWidth = container.clientWidth;
-        const imgRatio = img.naturalWidth / img.naturalHeight;
 
-        const newWidth = containerWidth;
-        const newHeight = containerWidth / imgRatio;
+        // Proporção da imagem
+        const aspectRatio = img.naturalWidth / img.naturalHeight;
 
-        // Ajusta container para altura exata
-        container.style.minHeight = newHeight + 'px';
-        container.style.height = newHeight + 'px';
+        // Altura proporcional
+        const calculatedHeight = containerWidth / aspectRatio;
 
-        // Define tamanho exato da imagem
+        // ⭐ Define altura EXATA do container (sem espaços vazios)
+        container.style.height = calculatedHeight + 'px';
+        container.style.minHeight = calculatedHeight + 'px';
+
+        // ⭐ Imagem ocupa 100% sem margens
         Object.assign(img.style, {
-            width: newWidth + 'px',
-            height: newHeight + 'px',
+            width: '100%',
+            height: '100%',
             display: 'block',
             margin: '0',
             padding: '0',
             objectFit: 'contain'
         });
 
-        console.log(`📐 Imagem ajustada: ${newWidth}x${newHeight}px`);
+        console.log(`📐 Imagem ajustada: Container ${containerWidth}x${calculatedHeight}px`);
     };
 
-    // ⭐ ATUALIZADO: Renderizar PDF sem margens
+    // ⭐ NOVO: Renderiza PDF com dimensões exatas
     const renderPDF = async (file) => {
         if (!window.pdfjsLib) {
             console.error('PDF.js não está carregado');
@@ -90,8 +97,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
             const page = await pdf.getPage(1);
 
-            // ⭐ Calcula escala para preencher container sem espaços
+            // ⭐ Largura do container
             const containerWidth = elements.certificatePreview.clientWidth;
+
+            // ⭐ Calcula escala para preencher 100% da largura
             const viewport = page.getViewport({ scale: 1 });
             const scale = containerWidth / viewport.width;
             const scaledViewport = page.getViewport({ scale });
@@ -99,13 +108,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const canvas = elements.pdfPreviewCanvas;
             const context = canvas.getContext('2d');
 
-            // ⭐ Define dimensões EXATAS
+            // ⭐ Canvas com dimensões EXATAS do PDF escalado
             canvas.width = scaledViewport.width;
             canvas.height = scaledViewport.height;
 
-            // ⭐ Ajusta container para altura exata (sem bordas brancas)
-            elements.certificatePreview.style.minHeight = scaledViewport.height + 'px';
+            // ⭐ Container com altura EXATA (sem espaços)
             elements.certificatePreview.style.height = scaledViewport.height + 'px';
+            elements.certificatePreview.style.minHeight = scaledViewport.height + 'px';
 
             // Renderiza
             currentRenderTask = page.render({
@@ -116,13 +125,13 @@ document.addEventListener('DOMContentLoaded', function () {
             await currentRenderTask.promise;
             currentRenderTask = null;
 
-            // ⭐ Remove qualquer margin/padding do canvas
+            // ⭐ Canvas ocupa 100% sem margens
             Object.assign(canvas.style, {
                 display: 'block',
-                margin: '0',
-                padding: '0',
                 width: '100%',
-                height: 'auto'
+                height: '100%',
+                margin: '0',
+                padding: '0'
             });
 
             if (elements.certificadoVazioImg) elements.certificadoVazioImg.style.display = 'none';
@@ -299,16 +308,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     };
 
-    // ===== FUNÇÕES PARA REMOVER/RESTAURAR ESTILOS DE EDIÇÃO ===== (VERSÃO ÚNICA E CONSOLIDADA)
+    // ===== FUNÇÕES PARA REMOVER/RESTAURAR ESTILOS DE EDIÇÃO =====
     const removeEditingStyles = () => {
         const savedStyles = [];
 
-        // Remove a borda azul da área de preview
+        // Remove a borda do container
         if (elements.certificatePreview) {
             const originalPreviewStyles = {
                 border: elements.certificatePreview.style.border,
                 outline: elements.certificatePreview.style.outline,
-                boxShadow: elements.certificatePreview.style.boxShadow
+                boxShadow: elements.certificatePreview.style.boxShadow,
+                background: elements.certificatePreview.style.background
             };
             savedStyles.push({
                 element: elements.certificatePreview,
@@ -317,7 +327,8 @@ document.addEventListener('DOMContentLoaded', function () {
             Object.assign(elements.certificatePreview.style, {
                 border: 'none',
                 outline: 'none',
-                boxShadow: 'none'
+                boxShadow: 'none',
+                background: 'transparent'
             });
         }
 
@@ -379,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             // Captura como imagem em ALTA RESOLUÇÃO
             const canvas = await html2canvas(elements.certificatePreview, {
-                scale: scale, // 4x = 4x a resolução original
+                scale: scale,
                 useCORS: true,
                 allowTaint: false,
                 logging: false,
@@ -393,13 +404,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const imgHeight = canvas.height / scale;
 
             // Converte para PDF mantendo proporções reais
-            const imgData = canvas.toDataURL('image/png', 1.0); // Qualidade máxima
+            const imgData = canvas.toDataURL('image/png', 1.0);
 
             const pdf = new jspdf.jsPDF({
                 orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
                 unit: 'pt',
                 format: [imgWidth, imgHeight],
-                compress: false // Sem compressão para máxima qualidade
+                compress: false
             });
 
             pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight, undefined, 'FAST');
@@ -501,17 +512,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // ⭐ ATUALIZADO: Reajusta tamanho no resize
-    window.addEventListener('resize', async () => {
-        if (elements.certificadoVazioImg?.style.display !== 'none') {
-            adjustImageSize();
-        } else if (elements.pdfPreviewCanvas?.style.display !== 'none') {
-            // Re-renderiza PDF para manter proporções
-            const file = elements.certificadoVazioInput?.files[0];
-            if (file && file.type === 'application/pdf') {
-                await renderPDF(file);
+    // ⭐ CRÍTICO: Reajusta tamanho no resize e zoom
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(async () => {
+            if (elements.certificadoVazioImg?.style.display !== 'none') {
+                adjustImageSize();
+            } else if (elements.pdfPreviewCanvas?.style.display !== 'none') {
+                const file = elements.certificadoVazioInput?.files[0];
+                if (file && file.type === 'application/pdf') {
+                    await renderPDF(file);
+                }
             }
-        }
+        }, 250); // Debounce de 250ms
     });
 
     updateDraggableDivs();
