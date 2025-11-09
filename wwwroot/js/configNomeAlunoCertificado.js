@@ -30,60 +30,91 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Estado
     let isLocked = false;
-    let baseFontSize = 24; // Tamanho base da fonte
-    let isDragging = false; // ⭐ NOVO: Flag para detectar arraste
+    let baseFontSize = 24;
+    let isDragging = false;
+    let isInitialized = false; // ⭐ Previne re-inicializações
+    let savedPosition = { x: 0, y: 0 }; // ⭐ Salva posição durante ajustes
 
     // Desabilita submit até salvar configuração
     if (elements.submitBtn) elements.submitBtn.disabled = true;
 
+    // ⭐ DETECTA NAVEGADOR (Chrome tem bugs específicos)
+    const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+    console.log(`🌐 Navegador: ${isChrome ? 'Chrome' : 'Outro'}`);
+
     // ===== FUNÇÃO DE AUTO-AJUSTE DE FONTE =====
     const autoAdjustFontSize = () => {
-        // ⭐ NÃO ajusta durante arraste
-        if (isDragging) return;
-
+        if (isDragging || isLocked) return;
         if (!elements.nomeAlunoText || !elements.draggableNomeAluno) return;
 
-        const containerWidth = elements.draggableNomeAluno.offsetWidth || 400;
-        const text = elements.nomeAlunoText.textContent;
+        // ⭐ Salva posição atual antes de ajustar
+        savedPosition = {
+            x: parseFloat(elements.draggableNomeAluno.getAttribute('data-x')) || 0,
+            y: parseFloat(elements.draggableNomeAluno.getAttribute('data-y')) || 0
+        };
 
-        // Calcula tamanho base
+        const containerWidth = elements.draggableNomeAluno.offsetWidth || 400;
         baseFontSize = parseInt(elements.fontSizeInput?.value) || 24;
         let currentFontSize = baseFontSize;
 
-        // Aplica tamanho temporário para medir
         elements.nomeAlunoText.style.fontSize = currentFontSize + 'px';
-        elements.nomeAlunoText.style.whiteSpace = 'nowrap'; // Força uma linha
+        elements.nomeAlunoText.style.whiteSpace = 'nowrap';
 
         let textWidth = elements.nomeAlunoText.scrollWidth;
 
-        // Se o texto não couber, diminui a fonte progressivamente
         while (textWidth > containerWidth && currentFontSize > 8) {
             currentFontSize -= 1;
             elements.nomeAlunoText.style.fontSize = currentFontSize + 'px';
             textWidth = elements.nomeAlunoText.scrollWidth;
         }
 
-        // Atualiza o input visual (para referência do usuário)
         if (elements.fontSizeInput && currentFontSize !== baseFontSize) {
             elements.fontSizeInput.value = currentFontSize;
         }
 
-        console.log(`📏 Auto-ajuste: ${baseFontSize}px → ${currentFontSize}px (Largura: ${textWidth}/${containerWidth})`);
+        // ⭐ RESTAURA posição após ajuste (Chrome bug fix)
+        requestAnimationFrame(() => {
+            if (elements.draggableNomeAluno) {
+                elements.draggableNomeAluno.style.transform = `translate(${savedPosition.x}px, ${savedPosition.y}px)`;
+                elements.draggableNomeAluno.setAttribute('data-x', savedPosition.x);
+                elements.draggableNomeAluno.setAttribute('data-y', savedPosition.y);
+            }
+        });
+
+        console.log(`📏 Auto-ajuste: ${baseFontSize}px → ${currentFontSize}px`);
     };
 
     // ===== FUNÇÕES DE TEXTO =====
     const updateNomeAlunoText = () => {
         if (!elements.nomeAlunoText) return;
+
+        // ⭐ Salva posição antes de atualizar
+        if (isInitialized) {
+            savedPosition = {
+                x: parseFloat(elements.draggableNomeAluno?.getAttribute('data-x')) || 0,
+                y: parseFloat(elements.draggableNomeAluno?.getAttribute('data-y')) || 0
+            };
+        }
+
         elements.nomeAlunoText.textContent = elements.nomeAlunoPreview?.value || 'João da Silva';
 
-        // ⭐ Auto-ajusta APENAS se não estiver arrastando
-        if (!isDragging) {
-            setTimeout(autoAdjustFontSize, 50);
+        if (!isDragging && !isLocked) {
+            setTimeout(() => {
+                autoAdjustFontSize();
+            }, 50);
         }
     };
 
     const updateNomeAlunoStyle = () => {
         if (!elements.nomeAlunoText) return;
+
+        // ⭐ Salva posição antes de atualizar
+        if (isInitialized) {
+            savedPosition = {
+                x: parseFloat(elements.draggableNomeAluno?.getAttribute('data-x')) || 0,
+                y: parseFloat(elements.draggableNomeAluno?.getAttribute('data-y')) || 0
+            };
+        }
 
         const styles = {
             fontFamily: elements.fontSelector?.value || 'Arial',
@@ -97,59 +128,100 @@ document.addEventListener('DOMContentLoaded', function () {
         };
 
         Object.assign(elements.nomeAlunoText.style, styles);
-
-        // Recalcula tamanho base
         baseFontSize = parseInt(elements.fontSizeInput?.value) || 24;
 
-        // ⭐ Auto-ajusta APENAS se não estiver arrastando
-        if (!isDragging) {
-            setTimeout(autoAdjustFontSize, 50);
+        if (!isDragging && !isLocked) {
+            setTimeout(() => {
+                autoAdjustFontSize();
+            }, 50);
         }
     };
 
     // ===== DRAGGABLE COM INTERACT.JS =====
     const initializeDraggable = () => {
         if (!elements.draggableNomeAluno || !window.interact) {
-            console.warn('Interact.js não encontrado');
+            console.warn('⚠️ Interact.js não encontrado');
             return;
         }
 
+        // ⭐ Previne múltiplas inicializações
+        if (isInitialized) {
+            console.log('✅ Draggable já inicializado');
+            return;
+        }
+
+        // ⭐ Remove listeners anteriores (Chrome fix)
+        try {
+            interact(elements.draggableNomeAluno).unset();
+        } catch (e) {
+            // Ignora se não houver listeners
+        }
+
         interact(elements.draggableNomeAluno).draggable({
-            inertia: true,
+            inertia: false, // ⭐ Desabilita inércia no Chrome
             modifiers: [
                 interact.modifiers.restrictRect({
                     restriction: 'parent',
                     endOnly: true
                 })
             ],
-            autoScroll: true,
+            autoScroll: false, // ⭐ Desabilita autoscroll (Chrome bug)
             listeners: {
                 start(event) {
                     if (isLocked) return;
-                    isDragging = true; // ⭐ Marca que está arrastando
+
+                    isDragging = true;
                     event.target.classList.add('dragging');
+
+                    // ⭐ Previne seleção de texto durante arraste
+                    event.preventDefault();
+                    document.body.style.userSelect = 'none';
+
+                    console.log('🎯 Início do arraste');
                 },
                 move(event) {
                     if (isLocked) return;
 
                     const target = event.target;
-                    const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-                    const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+                    const currentX = parseFloat(target.getAttribute('data-x')) || 0;
+                    const currentY = parseFloat(target.getAttribute('data-y')) || 0;
 
+                    const x = currentX + event.dx;
+                    const y = currentY + event.dy;
+
+                    // ⭐ Aplica transform imediatamente (Chrome fix)
                     target.style.transform = `translate(${x}px, ${y}px)`;
+                    target.style.webkitTransform = `translate(${x}px, ${y}px)`; // Safari/Chrome
+
                     target.setAttribute('data-x', x);
                     target.setAttribute('data-y', y);
 
-                    // Atualiza posição
+                    // Atualiza UI
                     if (elements.posX) elements.posX.textContent = Math.round(x);
                     if (elements.posY) elements.posY.textContent = Math.round(y);
                 },
                 end(event) {
                     event.target.classList.remove('dragging');
-                    isDragging = false; // ⭐ Terminou de arrastar
+                    document.body.style.userSelect = '';
+
+                    // ⭐ Delay antes de marcar como não arrastando (Chrome fix)
+                    setTimeout(() => {
+                        isDragging = false;
+
+                        // Salva posição final
+                        savedPosition = {
+                            x: parseFloat(event.target.getAttribute('data-x')) || 0,
+                            y: parseFloat(event.target.getAttribute('data-y')) || 0
+                        };
+
+                        console.log('✋ Fim do arraste:', savedPosition);
+                    }, 100);
                 }
             }
         });
+
+        isInitialized = true;
+        console.log('✅ Draggable inicializado');
     };
 
     // ===== MOSTRAR CAMPO DRAGGABLE =====
@@ -159,12 +231,23 @@ document.addEventListener('DOMContentLoaded', function () {
         elements.draggableNomeAluno.style.display = 'block';
         if (elements.positionInfo) elements.positionInfo.style.display = 'block';
 
+        // ⭐ Garante posição inicial
+        if (!isInitialized) {
+            elements.draggableNomeAluno.style.transform = 'translate(0px, 0px)';
+            elements.draggableNomeAluno.setAttribute('data-x', 0);
+            elements.draggableNomeAluno.setAttribute('data-y', 0);
+        }
+
         updateNomeAlunoText();
         updateNomeAlunoStyle();
-        initializeDraggable();
 
-        // Auto-ajusta após exibir
-        setTimeout(autoAdjustFontSize, 100);
+        // ⭐ Delay para garantir renderização completa
+        setTimeout(() => {
+            initializeDraggable();
+            if (!isLocked) {
+                autoAdjustFontSize();
+            }
+        }, 150);
     };
 
     // ===== SALVAR CONFIGURAÇÃO =====
@@ -177,13 +260,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const rect = elements.draggableNomeAluno.getBoundingClientRect();
         const parentRect = elements.certificatePreview.getBoundingClientRect();
 
-        // Usa o tamanho REAL da fonte (após auto-ajuste)
         const computedFontSize = window.getComputedStyle(elements.nomeAlunoText).fontSize;
         const actualFontSize = parseFloat(computedFontSize);
+
+        // ⭐ Usa posição salva (mais precisa)
+        const finalX = parseFloat(elements.draggableNomeAluno.getAttribute('data-x')) || 0;
+        const finalY = parseFloat(elements.draggableNomeAluno.getAttribute('data-y')) || 0;
 
         const config = {
             Top: Math.round(rect.top - parentRect.top) + 'px',
             Left: Math.round(rect.left - parentRect.left) + 'px',
+            TranslateX: finalX + 'px', // ⭐ Salva translate também
+            TranslateY: finalY + 'px',
             Width: Math.round(rect.width),
             Height: actualFontSize,
             FontFamily: elements.fontSelector?.value || 'Arial',
@@ -196,23 +284,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
         elements.nomeAlunoConfigInput.value = JSON.stringify(config);
 
-        // Trava o campo
         isLocked = true;
         Object.assign(elements.draggableNomeAluno.style, {
             borderColor: '#28a745',
             cursor: 'default'
         });
 
-        // Habilita submit
         if (elements.submitBtn) elements.submitBtn.disabled = false;
 
-        // Feedback visual
         elements.saveConfigBtn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>Configuração Salva!';
         elements.saveConfigBtn.classList.replace('btn-outline-success', 'btn-success');
         elements.saveConfigBtn.disabled = true;
 
         showSuccessMessage('Configuração do nome do aluno salva com sucesso!');
-        console.log('Configuração salva:', config);
+        console.log('💾 Configuração salva:', config);
     };
 
     // ===== MENSAGEM DE SUCESSO =====
@@ -232,10 +317,8 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // ===== EVENT LISTENERS =====
-    // Atualizar texto
     elements.nomeAlunoPreview?.addEventListener('input', updateNomeAlunoText);
 
-    // Atualizar estilos
     [elements.fontSelector, elements.fontSizeInput, elements.fontColorInput,
     elements.fontWeightInput, elements.textAlignSelector].forEach(el => {
         if (el) {
@@ -244,17 +327,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Salvar configuração
     elements.saveConfigBtn?.addEventListener('click', saveConfiguration);
 
-    // Toggle draggables
     elements.toggleDraggables?.addEventListener('change', function () {
         if (elements.draggableNomeAluno) {
             elements.draggableNomeAluno.style.display = this.checked ? 'block' : 'none';
         }
     });
 
-    // Validação no submit
     elements.form?.addEventListener('submit', function (e) {
         if (!elements.nomeAlunoConfigInput?.value) {
             e.preventDefault();
@@ -263,16 +343,33 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // ⭐ Re-ajusta ao redimensionar janela (APENAS se não estiver arrastando)
+    // ⭐ Resize otimizado para Chrome
     let resizeTimeout;
+    let lastWidth = window.innerWidth;
+
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
+
+        // ⭐ Ignora resize se for apenas zoom (Chrome)
+        const currentWidth = window.innerWidth;
+        if (Math.abs(currentWidth - lastWidth) < 10) return;
+        lastWidth = currentWidth;
+
         resizeTimeout = setTimeout(() => {
-            if (elements.draggableNomeAluno?.style.display !== 'none' && !isDragging) {
+            if (elements.draggableNomeAluno?.style.display !== 'none' && !isDragging && !isLocked) {
+                console.log('🔄 Resize detectado, reajustando...');
                 autoAdjustFontSize();
             }
-        }, 250); // Debounce
+        }, 300);
     });
 
-    console.log('Config Nome Aluno carregado com sucesso!');
+    // ⭐ Previne comportamento padrão de drag no Chrome
+    if (elements.draggableNomeAluno) {
+        elements.draggableNomeAluno.addEventListener('dragstart', (e) => {
+            e.preventDefault();
+            return false;
+        });
+    }
+
+    console.log('✅ Config Nome Aluno carregado (Chrome-optimized)');
 });
