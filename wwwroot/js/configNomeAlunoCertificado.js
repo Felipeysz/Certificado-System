@@ -158,14 +158,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         interact(elements.draggableNomeAluno).draggable({
-            inertia: false, // ⭐ Desabilita inércia no Chrome
+            inertia: false,
             modifiers: [
                 interact.modifiers.restrictRect({
                     restriction: 'parent',
-                    endOnly: true
+                    endOnly: false // ⭐ Restrição contínua (sem inércia)
                 })
             ],
-            autoScroll: false, // ⭐ Desabilita autoscroll (Chrome bug)
+            autoScroll: false,
+            maxPerElement: 1, // ⭐ Apenas um arraste por vez
             listeners: {
                 start(event) {
                     if (isLocked) return;
