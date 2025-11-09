@@ -239,6 +239,21 @@ textarea.form-control {
         transform: scale(1.1);
     }
 
+.certificate-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+    .certificate-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+    }
+
+.form-check-input {
+    width: 1.5em;
+    height: 1.5em;
+}
+
 /* Linhas divisórias */
 hr {
     border: none;

@@ -31,12 +31,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // Estado
     let isLocked = false;
     let baseFontSize = 24; // Tamanho base da fonte
+    let isDragging = false; // ⭐ NOVO: Flag para detectar arraste
 
     // Desabilita submit até salvar configuração
     if (elements.submitBtn) elements.submitBtn.disabled = true;
 
     // ===== FUNÇÃO DE AUTO-AJUSTE DE FONTE =====
     const autoAdjustFontSize = () => {
+        // ⭐ NÃO ajusta durante arraste
+        if (isDragging) return;
+
         if (!elements.nomeAlunoText || !elements.draggableNomeAluno) return;
 
         const containerWidth = elements.draggableNomeAluno.offsetWidth || 400;
@@ -72,8 +76,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!elements.nomeAlunoText) return;
         elements.nomeAlunoText.textContent = elements.nomeAlunoPreview?.value || 'João da Silva';
 
-        // Auto-ajusta após mudar o texto
-        setTimeout(autoAdjustFontSize, 50);
+        // ⭐ Auto-ajusta APENAS se não estiver arrastando
+        if (!isDragging) {
+            setTimeout(autoAdjustFontSize, 50);
+        }
     };
 
     const updateNomeAlunoStyle = () => {
@@ -85,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
             color: elements.fontColorInput?.value || '#000000',
             fontWeight: elements.fontWeightInput?.checked ? 'bold' : 'normal',
             textAlign: elements.textAlignSelector?.value || 'center',
-            whiteSpace: 'nowrap', // ⭐ PREVINE QUEBRA DE LINHA
+            whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis'
         };
@@ -95,8 +101,10 @@ document.addEventListener('DOMContentLoaded', function () {
         // Recalcula tamanho base
         baseFontSize = parseInt(elements.fontSizeInput?.value) || 24;
 
-        // Auto-ajusta após mudar o estilo
-        setTimeout(autoAdjustFontSize, 50);
+        // ⭐ Auto-ajusta APENAS se não estiver arrastando
+        if (!isDragging) {
+            setTimeout(autoAdjustFontSize, 50);
+        }
     };
 
     // ===== DRAGGABLE COM INTERACT.JS =====
@@ -118,6 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
             listeners: {
                 start(event) {
                     if (isLocked) return;
+                    isDragging = true; // ⭐ Marca que está arrastando
                     event.target.classList.add('dragging');
                 },
                 move(event) {
@@ -137,6 +146,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 end(event) {
                     event.target.classList.remove('dragging');
+                    isDragging = false; // ⭐ Terminou de arrastar
                 }
             }
         });
@@ -167,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const rect = elements.draggableNomeAluno.getBoundingClientRect();
         const parentRect = elements.certificatePreview.getBoundingClientRect();
 
-        // ⭐ Usa o tamanho REAL da fonte (após auto-ajuste)
+        // Usa o tamanho REAL da fonte (após auto-ajuste)
         const computedFontSize = window.getComputedStyle(elements.nomeAlunoText).fontSize;
         const actualFontSize = parseFloat(computedFontSize);
 
@@ -177,8 +187,8 @@ document.addEventListener('DOMContentLoaded', function () {
             Width: Math.round(rect.width),
             Height: actualFontSize,
             FontFamily: elements.fontSelector?.value || 'Arial',
-            FontSize: actualFontSize + 'px', // ⭐ Salva tamanho real
-            BaseFontSize: baseFontSize + 'px', // ⭐ Salva tamanho base para referência
+            FontSize: actualFontSize + 'px',
+            BaseFontSize: baseFontSize + 'px',
             Color: elements.fontColorInput?.value || '#000000',
             FontWeight: elements.fontWeightInput?.checked ? 'bold' : 'regular',
             TextAlign: elements.textAlignSelector?.value || 'center'
@@ -253,11 +263,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // ⭐ Re-ajusta ao redimensionar janela
+    // ⭐ Re-ajusta ao redimensionar janela (APENAS se não estiver arrastando)
+    let resizeTimeout;
     window.addEventListener('resize', () => {
-        if (elements.draggableNomeAluno?.style.display !== 'none') {
-            autoAdjustFontSize();
-        }
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            if (elements.draggableNomeAluno?.style.display !== 'none' && !isDragging) {
+                autoAdjustFontSize();
+            }
+        }, 250); // Debounce
     });
 
     console.log('Config Nome Aluno carregado com sucesso!');
