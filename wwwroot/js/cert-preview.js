@@ -1,4 +1,4 @@
-﻿// ===== CERT-PREVIEW.JS - Responsável por upload e preview de imagens/PDFs =====
+// ===== CERT-PREVIEW.JS - Responsável por upload e preview de imagens/PDFs =====
 document.addEventListener('DOMContentLoaded', function () {
     const el = {
         preview: document.getElementById('certificatePreview'),
@@ -17,6 +17,10 @@ document.addEventListener('DOMContentLoaded', function () {
             el.img.style.display = 'none';
         }
         if (el.canvas) el.canvas.style.display = 'none';
+        
+        const positionInfo = document.getElementById('positionInfo');
+        if (positionInfo) positionInfo.style.display = 'none';
+        
         if (el.placeholder) el.placeholder.style.display = 'flex';
 
         el.preview.style.height = 'auto';
@@ -37,16 +41,27 @@ document.addEventListener('DOMContentLoaded', function () {
             if (el.canvas) el.canvas.style.display = 'none';
 
             el.img.onload = () => {
-                const w = el.preview.clientWidth;
-                const h = w / (el.img.naturalWidth / el.img.naturalHeight);
-                adjustContainer(w, h);
+                const containerWidth = el.preview.clientWidth;
+                const aspectRatio = el.img.naturalWidth / el.img.naturalHeight;
+                const height = containerWidth / aspectRatio;
+                
+                adjustContainer(containerWidth, height);
 
                 Object.assign(el.img.style, {
-                    width: '100%', height: '100%', display: 'block',
-                    margin: '0', padding: '0', objectFit: 'contain'
+                    width: '100%',
+                    height: '100%',
+                    display: 'block',
+                    margin: '0',
+                    padding: '0',
+                    objectFit: 'contain',
+                    maxWidth: '100%',
+                    maxHeight: '100%'
                 });
 
-                window.showDraggableNomeAluno?.();
+                if (window.showDraggableNomeAluno) {
+                    window.showDraggableNomeAluno();
+                }
+                
                 console.log('✅ Imagem carregada');
             };
         };
@@ -86,12 +101,21 @@ document.addEventListener('DOMContentLoaded', function () {
             currentPdfTask = null;
 
             Object.assign(el.canvas.style, {
-                display: 'block', width: '100%', height: '100%',
-                margin: '0', padding: '0'
+                display: 'block',
+                width: '100%',
+                height: '100%',
+                margin: '0',
+                padding: '0',
+                objectFit: 'contain',
+                maxWidth: '100%',
+                maxHeight: '100%'
             });
 
             if (el.img) el.img.style.display = 'none';
-            window.showDraggableNomeAluno?.();
+            
+            if (window.showDraggableNomeAluno) {
+                window.showDraggableNomeAluno();
+            }
 
             console.log(`✅ PDF: ${scaledViewport.width}x${scaledViewport.height}px`);
 
@@ -105,13 +129,48 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
+    // ===== VALIDAÇÃO DE ARQUIVO =====
+    const validateFile = (file) => {
+        const validTypes = ['image/png', 'application/pdf'];
+        const maxSize = 10 * 1024 * 1024; // 10MB
+
+        if (!validTypes.includes(file.type)) {
+            alert('❌ Erro: Apenas arquivos PNG ou PDF são aceitos.');
+            return false;
+        }
+
+        if (file.size > maxSize) {
+            alert('❌ Erro: O arquivo deve ter no máximo 10MB.');
+            return false;
+        }
+
+        return true;
+    };
+
     // ===== UPLOAD =====
     el.fileInput?.addEventListener('change', async (e) => {
         const file = e.target.files[0];
-        if (!file) return resetPreview();
+        
+        if (!file) {
+            resetPreview();
+            return;
+        }
+
+        // Validar arquivo
+        if (!validateFile(file)) {
+            e.target.value = ''; // Limpar input
+            resetPreview();
+            return;
+        }
 
         if (el.placeholder) el.placeholder.style.display = 'none';
-        file.type === 'application/pdf' ? await renderPDF(file) : renderImage(file);
+        
+        // Renderizar baseado no tipo
+        if (file.type === 'application/pdf') {
+            await renderPDF(file);
+        } else if (file.type === 'image/png') {
+            renderImage(file);
+        }
     });
 
     // ===== RESIZE =====
@@ -120,12 +179,15 @@ document.addEventListener('DOMContentLoaded', function () {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(async () => {
             if (el.img?.style.display !== 'none' && el.img.naturalWidth) {
-                const w = el.preview.clientWidth;
-                const h = w / (el.img.naturalWidth / el.img.naturalHeight);
-                adjustContainer(w, h);
+                const containerWidth = el.preview.clientWidth;
+                const aspectRatio = el.img.naturalWidth / el.img.naturalHeight;
+                const height = containerWidth / aspectRatio;
+                adjustContainer(containerWidth, height);
             } else if (el.canvas?.style.display !== 'none') {
                 const file = el.fileInput?.files[0];
-                if (file?.type === 'application/pdf') await renderPDF(file);
+                if (file?.type === 'application/pdf') {
+                    await renderPDF(file);
+                }
             }
         }, 250);
     });
