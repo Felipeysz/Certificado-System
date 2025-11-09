@@ -200,18 +200,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const fontSize = parseFloat(window.getComputedStyle(el.text).fontSize);
 
         const config = {
-            Top: Math.round(rect.top - parentRect.top) + 'px',
-            Left: Math.round(rect.left - parentRect.left) + 'px',
-            TranslateX: state.position.x + 'px',
-            TranslateY: state.position.y + 'px',
-            Width: Math.round(rect.width),
-            Height: fontSize,
-            FontFamily: el.font?.value || 'Arial',
-            FontSize: fontSize + 'px',
-            BaseFontSize: state.baseFontSize + 'px',
-            Color: el.fontColor?.value || '#000000',
-            FontWeight: el.fontWeight?.checked ? 'bold' : 'regular',
-            TextAlign: el.textAlign?.value || 'center'
+            top: Math.round(rect.top - parentRect.top) + 'px',
+            left: Math.round(rect.left - parentRect.left) + 'px',
+            translateX: state.position.x + 'px',
+            translateY: state.position.y + 'px',
+            width: Math.round(rect.width),
+            height: fontSize,
+            fontFamily: el.font?.value || 'Arial',
+            fontSize: fontSize + 'px',
+            baseFontSize: state.baseFontSize + 'px',
+            color: el.fontColor?.value || '#000000',
+            fontWeight: el.fontWeight?.checked ? 'bold' : 'regular',
+            textAlign: el.textAlign?.value || 'center'
         };
 
         el.configInput.value = JSON.stringify(config);
