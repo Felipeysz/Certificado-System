@@ -1,7 +1,20 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\Felip\\Desktop\\Certificado\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{C6CE82E9-2FAD-4CE1-A688-BAF4FDDF0AEE}|Certificado.csproj|c:\\users\\felip\\desktop\\certificado\\views\\certificados\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{C6CE82E9-2FAD-4CE1-A688-BAF4FDDF0AEE}|Certificado.csproj|solutionrelative:views\\certificados\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C6CE82E9-2FAD-4CE1-A688-BAF4FDDF0AEE}|Certificado.csproj|c:\\users\\felip\\desktop\\certificado\\wwwroot\\js\\certificate-form.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{C6CE82E9-2FAD-4CE1-A688-BAF4FDDF0AEE}|Certificado.csproj|solutionrelative:wwwroot\\js\\certificate-form.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C6CE82E9-2FAD-4CE1-A688-BAF4FDDF0AEE}|Certificado.csproj|c:\\users\\felip\\desktop\\certificado\\wwwroot\\js\\confignomealunocertificado.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{C6CE82E9-2FAD-4CE1-A688-BAF4FDDF0AEE}|Certificado.csproj|solutionrelative:wwwroot\\js\\confignomealunocertificado.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,11 +22,50 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "configNomeAlunoCertificado.js",
+              "DocumentMoniker": "C:\\Users\\Felip\\Desktop\\Certificado\\wwwroot\\js\\configNomeAlunoCertificado.js",
+              "RelativeDocumentMoniker": "wwwroot\\js\\configNomeAlunoCertificado.js",
+              "ToolTip": "C:\\Users\\Felip\\Desktop\\Certificado\\wwwroot\\js\\configNomeAlunoCertificado.js",
+              "RelativeToolTip": "wwwroot\\js\\configNomeAlunoCertificado.js",
+              "ViewState": "AgIAAOIAAAAAAAAAAAAmwO8AAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-11-09T00:31:03.682Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "certificate-form.js",
+              "DocumentMoniker": "C:\\Users\\Felip\\Desktop\\Certificado\\wwwroot\\js\\certificate-form.js",
+              "RelativeDocumentMoniker": "wwwroot\\js\\certificate-form.js",
+              "ToolTip": "C:\\Users\\Felip\\Desktop\\Certificado\\wwwroot\\js\\certificate-form.js",
+              "RelativeToolTip": "wwwroot\\js\\certificate-form.js",
+              "ViewState": "AgIAAOIBAAAAAAAAAAAowOsBAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-11-09T00:31:02.282Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Create.cshtml",
+              "DocumentMoniker": "C:\\Users\\Felip\\Desktop\\Certificado\\Views\\Certificados\\Create.cshtml",
+              "RelativeDocumentMoniker": "Views\\Certificados\\Create.cshtml",
+              "ToolTip": "C:\\Users\\Felip\\Desktop\\Certificado\\Views\\Certificados\\Create.cshtml",
+              "RelativeToolTip": "Views\\Certificados\\Create.cshtml",
+              "ViewState": "AgIAANMAAAAAAAAAAAAmwNwAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-11-09T00:30:58.501Z",
+              "EditorCaption": ""
             }
           ]
         }

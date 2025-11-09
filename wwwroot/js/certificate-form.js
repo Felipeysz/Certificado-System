@@ -367,6 +367,51 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     };
 
+    // ===== GERAÇÃO DO CERTIFICADO EM PDF (ALTA QUALIDADE) =====
+    const generateCertificatePDF = async (scale = 4) => {
+        if (!window.html2canvas || !window.jspdf) {
+            throw new Error('html2canvas ou jsPDF não estão carregados');
+        }
+
+        // Remove estilos de edição e ESCONDE o nome do aluno
+        const savedStyles = removeEditingStyles();
+
+        try {
+            // Captura como imagem em ALTA RESOLUÇÃO
+            const canvas = await html2canvas(elements.certificatePreview, {
+                scale: scale, // 4x = 4x a resolução original
+                useCORS: true,
+                allowTaint: false,
+                logging: false,
+                backgroundColor: null,
+                imageTimeout: 0,
+                removeContainer: true
+            });
+
+            // Dimensões em pontos (72 DPI)
+            const imgWidth = canvas.width / scale;
+            const imgHeight = canvas.height / scale;
+
+            // Converte para PDF mantendo proporções reais
+            const imgData = canvas.toDataURL('image/png', 1.0); // Qualidade máxima
+
+            const pdf = new jspdf.jsPDF({
+                orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
+                unit: 'pt',
+                format: [imgWidth, imgHeight],
+                compress: false // Sem compressão para máxima qualidade
+            });
+
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight, undefined, 'FAST');
+
+            return pdf.output('dataurlstring');
+
+        } finally {
+            // Restaura estilos de edição
+            restoreEditingStyles(savedStyles);
+        }
+    };
+
     // ===== PREVIEW DO CERTIFICADO =====
     elements.renderBtn?.addEventListener('click', async function (e) {
         e.preventDefault();
